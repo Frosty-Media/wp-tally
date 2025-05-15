@@ -190,15 +190,15 @@ function sort(array $items, string $order_by, string $sort): array
 {
     if ($order_by === 'downloaded') {
         if ($sort === 'desc') {
-            usort($items, fn($a, $b) => $b['downloaded'] - $a['downloaded']);
+            usort($items, static fn($a, $b) => $b['downloaded'] - $a['downloaded']);
         } else {
-            usort($items, fn($a, $b) => $a['downloaded'] - $b['downloaded']);
+            usort($items, static fn($a, $b) => $a['downloaded'] - $b['downloaded']);
         }
     } else {
         if ($sort === 'desc') {
-            usort($items, fn($a, $b) => strcmp((string)$b['slug'], (string)$a['slug']));
+            usort($items, static fn($a, $b) => strcmp((string)$b['slug'], (string)$a['slug']));
         } else {
-            usort($items, fn($a, $b) => strcmp((string)$a['slug'], (string)$b['slug']));
+            usort($items, static fn($a, $b) => strcmp((string)$a['slug'], (string)$b['slug']));
         }
     }
 
