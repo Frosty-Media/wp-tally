@@ -4,7 +4,7 @@
     <description>Coding Standards for the WP Tally codebase.</description>
 
     <!-- What to scan -->
-    <file>includes</file>
+    <file>src</file>
     <!-- Exclude the tests' directory. -->
     <exclude-pattern>tests/*</exclude-pattern>
     <!-- Third-party code -->
