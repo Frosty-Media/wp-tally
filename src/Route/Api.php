@@ -47,9 +47,7 @@ class Api implements WpHooksInterface
     {
         global $wp_query;
 
-        $var = apply_filters('frosty_media_wp_tally_query_var', 'wp-tally');
-
-        return isset($wp_query->query_vars[$var]);
+        return isset($wp_query->query_vars[self::getQueryVar()]);
     }
 
     /**
@@ -64,9 +62,7 @@ class Api implements WpHooksInterface
 
     /**
      * Get the data.
-     * @access public
      * @return array The output data
-     * @since 1.0.0
      */
     public function getData(): array
     {
@@ -84,13 +80,10 @@ class Api implements WpHooksInterface
 
     /**
      * Register our API endpoint.
-     * @access public
-     * @return void
-     * @since 1.0.0
      */
     protected function addRewriteEndpoint(): void
     {
-        add_rewrite_endpoint('api', EP_ALL);
+        add_rewrite_endpoint(self::getQueryVar(), EP_ALL);
     }
 
     /**
@@ -106,14 +99,14 @@ class Api implements WpHooksInterface
             return;
         }
 
-        if (empty($wp_query->query_vars['api'])) {
+        if (empty($wp_query->query_vars[self::getQueryVar()])) {
             $this->setData([
                 'error' => 'No username specified',
             ]);
             $this->render();
         }
 
-        $username = sanitize_user($wp_query->query_vars['api']);
+        $username = sanitize_user($wp_query->query_vars[self::getQueryVar()]);
         $lookup_count = get_option('wptally_lookups', 0);
         $lookup_count += $lookup_count;
         update_option('wptally_lookups', (int)$lookup_count);
@@ -234,6 +227,11 @@ class Api implements WpHooksInterface
         $vars[] = 'force';
 
         return $vars;
+    }
+
+    protected static function getQueryVar(): string
+    {
+        return apply_filters('frosty_media_wp_tally_query_var', 'wp-tally');
     }
 
     /**
