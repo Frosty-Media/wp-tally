@@ -264,12 +264,6 @@ class WPTally_API {
 		status_header( $status_code );
 
 		switch( $format ) {
-			case 'xml' :
-				require_once WPTALLY_DIR . 'includes/libraries/array2xml.php';
-				$xml = Array2XML::createXML( 'wptally', $this->data );
-				echo $xml->saveXML();
-
-				break;
 			case 'json' :
 				header( 'Content-Type: application/json' );
 				if ( ! empty( $this->pretty_print ) ) {
