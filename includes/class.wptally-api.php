@@ -34,7 +34,7 @@ class WPTally_API {
 	 * @since       1.0.0
 	 * @var         array $data The data to return
 	 */
-	private $data = array();
+	private $data = [];
 
 
 	/**
@@ -45,9 +45,9 @@ class WPTally_API {
 	 * @return      void
 	 */
 	public function __construct() {
-		add_action( 'init', array( $this, 'add_endpoint' ) );
-		add_action( 'template_redirect', array( $this, 'process_query' ), -1 );
-		add_filter( 'query_vars', array( $this, 'query_vars' ) );
+		add_action( 'init', $this->add_endpoint(...) );
+		add_action( 'template_redirect', $this->process_query(...), -1 );
+		add_filter( 'query_vars', $this->query_vars(...) );
 
 		// Determine if JSON_PRETTY_PRINT is available
 		$this->pretty_print = defined( 'JSON_PRETTY_PRINT' ) ? JSON_PRETTY_PRINT : null;
@@ -102,12 +102,12 @@ class WPTally_API {
 			return;
 		}
 
-		$data = array();
+		$data = [];
 
 		if ( empty( $wp_query->query_vars['api'] ) ) {
-			$data = array(
+			$data = [
 				'error' => 'No username specified'
-			);
+			];
 		} else {
 			$lookup_count = get_option( 'wptally_lookups' );
 			$lookup_count = $lookup_count ? $lookup_count + 1 : 1;
@@ -122,26 +122,26 @@ class WPTally_API {
 			$order_by = ( isset( $wp_query->query_vars['order-by'] ) && $wp_query->query_vars['order-by'] == 'downloads' ? 'downloaded' : 'name' );
 			$sort     = ( isset( $wp_query->query_vars['sort'] ) && strtolower( $wp_query->query_vars['sort'] ) == 'desc' ? 'desc' : 'asc' );
 
-			$data['info'] = array(
+			$data['info'] = [
 				'user'    => $wp_query->query_vars['api'],
 				'profile' => 'https://profiles.wordpress.org/' . $wp_query->query_vars['api']
-			);
+			];
 
 			$plugins = wptally_maybe_get_plugins( $wp_query->query_vars['api'], ( isset( $force ) ? true : false ) );
 
 			if ( is_wp_error( $plugins ) ) {
-				$data['plugins'] = array(
+				$data['plugins'] = [
 					'error' => 'An error occurred with the plugins API'
-				);
+				];
 			} else {
 				// How many plugins does the user have?
 				$count = count( $plugins->plugins );
 				$total_downloads = 0;
 
 				if ( $count == 0 ) {
-					$data['plugins'] = array(
+					$data['plugins'] = [
 						'error' => 'No plugins found for ' . $wp_query->query_vars['api']
-					);
+					];
 				} else {
 					$plugins = $plugins->plugins;
 
@@ -151,18 +151,18 @@ class WPTally_API {
 					foreach ( $plugins as $plugin ) {
 						$rating = wptally_get_rating( $plugin['num_ratings'], $plugin['ratings'] );
 
-						$data['plugins'][ $plugin['slug'] ] = array(
+						$data['plugins'][ $plugin['slug'] ] = [
 							'name'      => $plugin['name'],
 							'url'       => 'http://wordpress.org/plugins/' . $plugin['slug'],
 							'version'   => $plugin['version'],
-							'added'     => date( 'd M, Y', strtotime( $plugin['added'] ) ),
-							'updated'   => date( 'd M, Y', strtotime( $plugin['last_updated'] ) ),
+							'added'     => date( 'd M, Y', strtotime( (string) $plugin['added'] ) ),
+							'updated'   => date( 'd M, Y', strtotime( (string) $plugin['last_updated'] ) ),
 							'rating'    => $rating,
 							'downloads' => $plugin['downloaded'],
 							'installs'  => $plugin['active_installs']
-						);
+						];
 
-						$total_downloads = $total_downloads + $plugin['downloaded'];
+						$total_downloads += $plugin['downloaded'];
 					}
 
 					$data['info']['plugin_count']           = $count;
@@ -173,18 +173,18 @@ class WPTally_API {
 			$themes = wptally_maybe_get_themes( $wp_query->query_vars['api'], ( isset( $force ) ? true : false ) );
 
 			if ( is_wp_error( $themes ) ) {
-				$data['themes'] = array(
+				$data['themes'] = [
 					'error' => 'An error occurred with the themes API'
-				);
+				];
 			} else {
 				// How many plugins does the user have?
 				$count = count( $themes );
 				$total_downloads = 0;
 
 				if ( $count == 0 ) {
-					$data['themes'] = array(
+					$data['themes'] = [
 						'error' => 'No themes found for ' . $wp_query->query_vars['api']
-					);
+					];
 				} else {
 					// Maybe sort themes
 					$themes = wptally_sort( $themes, $order_by, $sort );
@@ -192,16 +192,16 @@ class WPTally_API {
 					foreach ( $themes as $theme ) {
 						$rating = wptally_get_rating( $theme['num_ratings'], $theme['rating'] );
 
-						$data['themes'][ $theme['slug'] ] = array(
+						$data['themes'][ $theme['slug'] ] = [
 							'name'      => $theme['name'],
 							'url'       => 'http://wordpress.org/themes/' . $theme['slug'],
 							'version'   => $theme['version'],
-							'updated'   => date( 'd M, Y', strtotime( $theme['last_updated'] ) ),
+							'updated'   => date( 'd M, Y', strtotime( (string) $theme['last_updated'] ) ),
 							'rating'    => $rating,
 							'downloads' => $theme['downloaded']
-						);
+						];
 
-						$total_downloads = $total_downloads + $theme['downloaded'];
+						$total_downloads += $theme['downloaded'];
 					}
 
 					$data['info']['theme_count']           = $count;
@@ -229,7 +229,7 @@ class WPTally_API {
 	public function get_output_format() {
 		global $wp_query;
 
-		$format = isset( $wp_query->query_vars['format'] ) ? $wp_query->query_vars['format'] : 'json';
+		$format = $wp_query->query_vars['format'] ?? 'json';
 
 		return $format;
 	}
