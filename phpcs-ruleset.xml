@@ -26,6 +26,10 @@
     <!-- Check for cross-version support for PHP 8.3 and higher. -->
     <config name="testVersion" value="8.3-"/>
 
+    <rule ref="vendor/slevomat/coding-standard/SlevomatCodingStandard/ruleset.xml">
+        <!-- sniffs to exclude -->
+    </rule>
+
     <rule ref="PSR12">
         <exclude name="PSR12.Classes.OpeningBraceSpace.Found"/>
         <exclude name="PSR12.Files.FileHeader.IncorrectOrder"/>
