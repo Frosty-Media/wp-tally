@@ -30,8 +30,8 @@ class ScriptsManager extends AbstractContainerProvider
             return;
         }
 
-        wp_enqueue_script(self::HANDLE, plugins_url('assets/js/wptally.js', __DIR__), ['jquery']);
-        wp_enqueue_style(self::HANDLE, plugins_url('assets/css/style.css', __DIR__));
+        wp_enqueue_script(self::HANDLE, plugins_url('resources/js/wptally.js', __DIR__), ['jquery']);
+        wp_enqueue_style(self::HANDLE, plugins_url('resources/css/style.css', __DIR__));
     }
 
 
@@ -44,6 +44,6 @@ class ScriptsManager extends AbstractContainerProvider
             return;
         }
 
-        wp_enqueue_style(self::HANDLE, plugins_url('assets/css/admin.css', __DIR__));
+        wp_enqueue_style(self::HANDLE, plugins_url('resources/css/admin.css', __DIR__));
     }
 }
