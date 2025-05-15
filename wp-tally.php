@@ -22,8 +22,12 @@ defined('ABSPATH') || exit;
 use FrostyMedia\WpTally\Route\Api;
 use TheFrosty\WpUtilities\Plugin\PluginFactory;
 use TheFrosty\WpUtilities\WpAdmin\DisablePluginUpdateCheck;
+use function add_action;
 use function defined;
+use function flush_rewrite_rules;
 use function is_readable;
+use function register_activation_hook;
+use function register_deactivation_hook;
 
 if (is_readable(__DIR__ . '/vendor/autoload.php')) {
     include_once __DIR__ . '/vendor/autoload.php';
@@ -36,7 +40,6 @@ $container->register(new ServiceProvider());
 $plugin
     ->add(new DisablePluginUpdateCheck())
     ->addOnHook(Route\Api::class, 'after_setup_theme')
-    ->addOnHook(Scripts\ScriptsManager::class, 'init')
     ->addOnHook(Shortcodes\Tally::class, 'after_setup_theme', args: [$container])
     ->addOnHook(WpAdmin\DashboardWidget::class, 'load-index.php')
     ->initialize();
