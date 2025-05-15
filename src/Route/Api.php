@@ -130,8 +130,7 @@ class Api implements WpHooksInterface
 
         if (is_wp_error($plugins)) {
             $data['plugins'] = [
-                'error' => 'An error occurred with the plugins API',
-                'wp_error' => $plugins->get_error_message(),
+                'error' => sprintf('An error occurred with the plugins API: %s', $plugins->get_error_message()),
             ];
         } else {
             // How many plugins does the user have?
@@ -172,12 +171,11 @@ class Api implements WpHooksInterface
 
         if (is_wp_error($themes)) {
             $data['themes'] = [
-                'error' => 'An error occurred with the themes API',
-                'wp_error' => $themes->get_error_message(),
+                'error' => sprintf('An error occurred with the themes API: %s', $themes->get_error_message()),
             ];
         } else {
             // How many plugins does the user have?
-            $count = count($themes);
+            $count = count((array)$themes);
             $total_downloads = 0;
 
             if ($count === 0) {
