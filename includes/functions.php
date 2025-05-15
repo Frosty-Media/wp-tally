@@ -33,10 +33,10 @@ function wptally_maybe_get_plugins( $username = false, $force = false ) {
 
 		if ( ! $plugins = get_transient( 'wp-tally-user-' . $username ) ) {
 			$plugins = plugins_api( 'query_plugins',
-				[
+				array(
 					'author'    => $username,
 					'per_page'  => 999,
-					'fields'    => [
+					'fields'    => array(
 						'downloaded'        => true,
 						'description'       => false,
 						'short_description' => false,
@@ -46,8 +46,8 @@ function wptally_maybe_get_plugins( $username = false, $force = false ) {
 						'added'             => true,
 						'last_updated'      => true,
 						'active_installs'   => true
-					]
-				]
+					)
+				)
 			);
 
 			set_transient( 'wp-tally-user-' . $username, $plugins, 60 * 60 );
@@ -79,19 +79,19 @@ function wptally_maybe_get_themes( $username = false, $force = false ) {
 		}
 
 		if ( ! $themes = get_transient( 'wp-tally-user-themes-' . $username ) ) {
-			$themes     = [];
+			$themes     = array();
 			$theme_list = themes_api( 'query_themes',
-				[
+				array(
 					'author'   => $username,
 					'per_page' => 999
-				]
+				)
 			);
 
-			foreach( $theme_list->themes as $data ) {
+			foreach( $theme_list->themes as $id => $data ) {
 				$themes[] = (array) themes_api( 'theme_information',
-					[
+					array(
 						'slug'   => $data->slug,
-						'fields' => [
+						'fields' => array(
 							'downloaded'        => true,
 							'description'       => false,
 							'short_description' => false,
@@ -99,8 +99,8 @@ function wptally_maybe_get_themes( $username = false, $force = false ) {
 							'sections'          => false,
 							'last_updated'      => true,
 							'ratings'           => true
-						]
-					]
+						)
+					)
 				);
 			}
 
@@ -126,10 +126,10 @@ function wptally_get_rating( $num_ratings, $ratings ) {
 	if ( $num_ratings > 0 ) {
 		if ( is_array( $ratings ) ) {
 			$rating = ( $ratings[5] > 0 ? $ratings[5] * 5 : 0 );
-			$rating += $ratings[4] > 0 ? $ratings[4] * 4 : 0;
-			$rating += $ratings[3] > 0 ? $ratings[3] * 3 : 0;
-			$rating += $ratings[2] > 0 ? $ratings[2] * 2 : 0;
-			$rating += $ratings[1] > 0 ? $ratings[1] * 1 : 0;
+			$rating = $rating + ( $ratings[4] > 0 ? $ratings[4] * 4 : 0 );
+			$rating = $rating + ( $ratings[3] > 0 ? $ratings[3] * 3 : 0 );
+			$rating = $rating + ( $ratings[2] > 0 ? $ratings[2] * 2 : 0 );
+			$rating = $rating + ( $ratings[1] > 0 ? $ratings[1] * 1 : 0 );
 			$rating = round( $rating / $num_ratings, 1 );
 		} else {
 			if ( $ratings > 0 && $ratings < 10 ) {
@@ -174,15 +174,23 @@ function wptally_get_rating( $num_ratings, $ratings ) {
 function wptally_sort( $items, $order_by, $sort ) {
 	if ( $order_by == 'downloaded' ) {
 		if ( $sort == 'desc' ) {
-			usort( $items, fn($a, $b) => $b['downloaded'] - $a['downloaded'] );
+			usort( $items, function( $a, $b ) {
+				return ( $b['downloaded'] - $a['downloaded'] );
+			} );
 		} else {
-			usort( $items, fn($a, $b) => $a['downloaded'] - $b['downloaded'] );
+			usort( $items, function( $a, $b ) {
+				return ( $a['downloaded'] - $b['downloaded'] );
+			} );
 		}
 	} else {
 		if ( $sort == 'desc' ) {
-			usort( $items, fn($a, $b) => strcmp( (string) $b['slug'], (string) $a['slug'] ) );
+			usort( $items, function( $a, $b ) {
+				return strcmp( $b['slug'], $a['slug'] );
+			} );
 		} else {
-			usort( $items, fn($a, $b) => strcmp( (string) $a['slug'], (string) $b['slug'] ) );
+			usort( $items, function( $a, $b ) {
+				return strcmp( $a['slug'], $b['slug'] );
+			} );
 		}
 	}
 

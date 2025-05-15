@@ -27,11 +27,11 @@ function wptally_shortcode( $atts, $content = null ) {
 	$theme_visibility  = ( $active == 'themes' ? '' : ' style="display: none;"' );
 	$plugin_visibility = ( $active == 'plugins' ? '' : ' style="display: none;"' );
 	$order_by          = ( isset( $_GET['by'] ) && $_GET['by'] == 'downloads' ? 'downloaded' : 'name' );
-	$sort              = ( isset( $_GET['dir'] ) && strtolower( (string) $_GET['dir'] ) == 'desc' ? 'desc' : 'asc' );
+	$sort              = ( isset( $_GET['dir'] ) && strtolower( $_GET['dir'] ) == 'desc' ? 'desc' : 'asc' );
 
 	$search_field  = '<div class="tally-search-box">';
 	$search_field .= '<form class="tally-search-form" method="get" action="">';
-	$search_field .= '<input type="text" name="wpusername" class="tally-search-field" placeholder="Enter your WordPress.org username" value="' . ( $username ?: '' ) . '" />';
+	$search_field .= '<input type="text" name="wpusername" class="tally-search-field" placeholder="Enter your WordPress.org username" value="' . ( $username ? $username : '' ) . '" />';
 	$search_field .= '<input type="submit" class="tally-search-submit" value="Search" />';
 	$search_field .= '</form>';
 	$search_field .= '</div>';
@@ -47,7 +47,7 @@ function wptally_shortcode( $atts, $content = null ) {
 			delete_transient( 'wp-tally-user-' . $username );
 		}
 
-		$plugins = wptally_maybe_get_plugins( $username, ( $_GET['force'] ?? false ) );
+		$plugins = wptally_maybe_get_plugins( $username, ( isset( $_GET['force'] ) ? $_GET['force'] : false ) );
 
 		$results .= '<div class="tally-search-results-wrapper">';
 		$results .= '<a class="tally-search-results-plugins-header' . ( $active == 'plugins' ? ' active' : '' ) . '">Plugins</a>';
@@ -100,8 +100,8 @@ function wptally_shortcode( $atts, $content = null ) {
 
 					// Plugin meta
 					$results .= '<div class="tally-plugin-meta">';
-					$results .= '<span class="tally-plugin-meta-item"><span class="tally-plugin-meta-title">Added:</span> ' . date( 'd M, Y', strtotime( (string) $plugin['added'] ) ) . '</span>';
-					$results .= '<span class="tally-plugin-meta-item"><span class="tally-plugin-meta-title">Last Updated:</span> ' . date( 'd M, Y', strtotime( (string) $plugin['last_updated'] ) ) . '</span>';
+					$results .= '<span class="tally-plugin-meta-item"><span class="tally-plugin-meta-title">Added:</span> ' . date( 'd M, Y', strtotime( $plugin['added'] ) ) . '</span>';
+					$results .= '<span class="tally-plugin-meta-item"><span class="tally-plugin-meta-title">Last Updated:</span> ' . date( 'd M, Y', strtotime( $plugin['last_updated'] ) ) . '</span>';
 					$results .= '<span class="tally-plugin-meta-item"><span class="tally-plugin-meta-title">Rating:</span> ' . ( empty( $rating ) ? 'not yet rated' : $rating . ' out of 5 stars' ) . '</span>';
 					$results .= '<span class="tally-plugin-meta-item"><span class="tally-plugin-meta-title">Active Installs:</span> ' . number_format( $plugin['active_installs'] ) . '</span>';
 					$results .= '</div>';
@@ -118,7 +118,7 @@ function wptally_shortcode( $atts, $content = null ) {
 					// End plugin row
 					$results .= '</div>';
 
-					$total_downloads += $plugin['downloaded'];
+					$total_downloads = $total_downloads + $plugin['downloaded'];
 
 					if ( ! empty( $rating ) ) {
 						$ratings_total += $rating;
@@ -151,7 +151,7 @@ function wptally_shortcode( $atts, $content = null ) {
 		}
 		$results .= '</div>';
 
-		$themes = wptally_maybe_get_themes( $username, ( $_GET['force'] ?? false ) );
+		$themes = wptally_maybe_get_themes( $username, ( isset( $_GET['force'] ) ? $_GET['force'] : false ) );
 
 		// Maybe sort themes
 		$themes = wptally_sort( $themes, $order_by, $sort );
@@ -183,7 +183,7 @@ function wptally_shortcode( $atts, $content = null ) {
 
 					// Theme meta
 					$results .= '<div class="tally-plugin-meta">';
-					$results .= '<span class="tally-plugin-meta-item"><span class="tally-plugin-meta-title">Last Updated:</span> ' . date( 'd M, Y', strtotime( (string) $theme['last_updated'] ) ) . '</span>';
+					$results .= '<span class="tally-plugin-meta-item"><span class="tally-plugin-meta-title">Last Updated:</span> ' . date( 'd M, Y', strtotime( $theme['last_updated'] ) ) . '</span>';
 					$results .= '<span class="tally-plugin-meta-item"><span class="tally-plugin-meta-title">Rating:</span> ' . ( empty( $rating ) ? 'not yet rated' : $rating . ' out of 5 stars' ) . '</span>';
 					$results .= '</div>';
 
@@ -199,7 +199,7 @@ function wptally_shortcode( $atts, $content = null ) {
 					// End theme row
 					$results .= '</div>';
 
-					$total_downloads += $theme['downloaded'];
+					$total_downloads = $total_downloads + $theme['downloaded'];
 
 					if ( ! empty( $rating ) ) {
 						$ratings_total += $rating;
