@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FrostyMedia\WpTally;
 
+use WP_Error;
 use function delete_transient;
 use function function_exists;
 use function get_transient;
@@ -36,9 +37,9 @@ function getTransientName(string $username, string $type = 'plugins'): string
  * Get a users plugin data.
  * @param false|string $username The user to check
  * @param bool $force Forcibly remove any existing transient and requery
- * @return object|false $plugins The users plugins
+ * @return array|object|false $plugins The users plugins
  */
-function maybeGetPlugins(false|string $username = false, bool $force = false): object|false
+function maybeGetPlugins(false|string $username = false, bool $force = false): array|object|false
 {
     if (!$username) {
         return false;
@@ -73,19 +74,28 @@ function maybeGetPlugins(false|string $username = false, bool $force = false): o
             ]
         );
 
-        set_transient(getTransientName($username), $plugins, DAY_IN_SECONDS);
+        if ($plugins instanceof WP_Error) {
+            // Cache the error for one minute as a sort of limit.
+            set_transient(getTransientName($username), $plugins, MINUTE_IN_SECONDS);
+            return $plugins;
+        }
+
+        if (isset($plugins->info->results) && $plugins->info->results === 0) {
+            $expiration = MONTH_IN_SECONDS;
+        }
+        set_transient(getTransientName($username), $plugins, $expiration ?? DAY_IN_SECONDS);
     }
 
-    return (object)$plugins;
+    return $plugins;
 }
 
 /**
  * Get a users theme data.
  * @param false|string $username The user to check
  * @param bool $force Forcibly remove any existing transient and requery
- * @return object|false $plugins The users plugins
+ * @return array|object|false $plugins The users plugins
  */
-function maybeGetThemes(false|string $username = false, bool $force = false): object|false
+function maybeGetThemes(false|string $username = false, bool $force = false): array|object|false
 {
     if (!$username) {
         return false;
@@ -109,8 +119,14 @@ function maybeGetThemes(false|string $username = false, bool $force = false): ob
             ]
         );
 
+        if ($theme_list instanceof WP_Error) {
+            // Cache the error for one minute as a sort of limit.
+            set_transient(getTransientName($username, 'themes'), $theme_list, MINUTE_IN_SECONDS);
+            return $theme_list;
+        }
+
         foreach ($theme_list->themes as $data) {
-            $themes[] = (array)themes_api(
+            $themes[] = themes_api(
                 'theme_information',
                 [
                     'slug' => $data->slug,
@@ -127,10 +143,13 @@ function maybeGetThemes(false|string $username = false, bool $force = false): ob
             );
         }
 
-        set_transient(getTransientName($username, 'themes'), $themes, DAY_IN_SECONDS);
+        if (isset($theme_list->info->results) && $theme_list->info->results === 0) {
+            $expiration = MONTH_IN_SECONDS;
+        }
+        set_transient(getTransientName($username, 'themes'), $themes, $expiration ?? DAY_IN_SECONDS);
     }
 
-    return (object)$themes;
+    return $themes;
 }
 
 /**
@@ -190,15 +209,15 @@ function sort(array $items, string $order_by, string $sort): array
 {
     if ($order_by === 'downloaded') {
         if ($sort === 'desc') {
-            usort($items, fn($a, $b) => $b['downloaded'] - $a['downloaded']);
+            usort($items, static fn($a, $b) => $b['downloaded'] - $a['downloaded']);
         } else {
-            usort($items, fn($a, $b) => $a['downloaded'] - $b['downloaded']);
+            usort($items, static fn($a, $b) => $a['downloaded'] - $b['downloaded']);
         }
     } else {
         if ($sort === 'desc') {
-            usort($items, fn($a, $b) => strcmp((string)$b['slug'], (string)$a['slug']));
+            usort($items, static fn($a, $b) => strcmp((string)$b['slug'], (string)$a['slug']));
         } else {
-            usort($items, fn($a, $b) => strcmp((string)$a['slug'], (string)$b['slug']));
+            usort($items, static fn($a, $b) => strcmp((string)$a['slug'], (string)$b['slug']));
         }
     }
 
