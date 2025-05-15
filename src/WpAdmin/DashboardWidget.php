@@ -7,9 +7,12 @@ namespace FrostyMedia\WpTally\WpAdmin;
 use TheFrosty\WpUtilities\Plugin\HooksTrait;
 use TheFrosty\WpUtilities\Plugin\WpHooksInterface;
 use function _n;
+use function filemtime;
 use function get_option;
 use function number_format_i18n;
+use function plugins_url;
 use function printf;
+use function wp_enqueue_style;
 
 class DashboardWidget implements WpHooksInterface
 {
@@ -22,8 +25,12 @@ class DashboardWidget implements WpHooksInterface
     public function addHooks(): void
     {
         $this->addAction('dashboard_glance_items', [$this, 'glanceItems']);
+        $this->addAction('admin_enqueue_scripts', [$this, 'adminEnqueueScripts']);
     }
 
+    /**
+     * Get our total lookups from the DB.
+     */
     protected function glanceItems(): void
     {
         $count = get_option('wptally_lookups', 0);
@@ -33,5 +40,21 @@ class DashboardWidget implements WpHooksInterface
         $label = _n('Lookup', 'Lookups', (int)$count, 'wp-tally');
 
         printf('<li class="wptally-count"><span>%d %s</span></li>', $count, $label);
+    }
+
+    /**
+     * Load admin scripts and styles
+     */
+    protected function adminEnqueueScripts(string $hook): void
+    {
+        if ($hook !== 'index.php') {
+            return;
+        }
+
+        wp_enqueue_style(
+            'wp-tally',
+            plugins_url('resources/css/admin.css', dirname(__DIR__)),
+            filemtime(plugin_dir_path(dirname(__DIR__)) . 'resources/css/admin.css')
+        );
     }
 }
