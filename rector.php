@@ -12,7 +12,6 @@ return RectorConfig::configure()
     // uncomment to reach your current PHP version
     ->withPhpSets(php83: true)
     ->withSkip([
-        __DIR__ . '/includes/*',
         FirstClassCallableRector::class,
     ])
     ->withTypeCoverageLevel(0)
