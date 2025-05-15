@@ -26,6 +26,7 @@
     "php": "^8.3"
   },
   "require-dev": {
+    "rector/rector": "^2.0",
     "roots/wordpress-no-content": "^6.6"
   },
   "autoload": {
