@@ -19,6 +19,7 @@ namespace FrostyMedia\WpTally;
 
 defined('ABSPATH') || exit;
 
+use FrostyMedia\WpTally\Route\Api;
 use TheFrosty\WpUtilities\Plugin\PluginFactory;
 use TheFrosty\WpUtilities\WpAdmin\DisablePluginUpdateCheck;
 use function defined;
@@ -40,4 +41,17 @@ $plugin
     ->addOnHook(WpAdmin\DashboardWidget::class, 'load-index.php')
     ->initialize();
 
+add_action('template_redirect', static function (): void {
+    if (Api::hasQueryVar()) {
+        require_once __DIR__ . '/src/functions.php';
+    }
+}, -5);
 
+// Make sure we flush rules for our rewrite endpoint.
+register_activation_hook(__FILE__, static function (): void {
+    flush_rewrite_rules(false);
+});
+
+register_deactivation_hook(__FILE__, static function (): void {
+    flush_rewrite_rules(false);
+});
