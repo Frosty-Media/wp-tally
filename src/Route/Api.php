@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace FrostyMedia\WpTally\Route;
 
+use FrostyMedia\WpTally\Models\Plugins\Api as PluginsApi;
+use FrostyMedia\WpTally\Models\Plugins\Plugin;
+use FrostyMedia\WpTally\Models\Themes\Api as ThemesApi;
+use FrostyMedia\WpTally\Models\Themes\Theme;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use TheFrosty\WpUtilities\Plugin\HooksTrait;
 use TheFrosty\WpUtilities\Plugin\WpHooksInterface;
+use WP_Http;
 use function add_rewrite_endpoint;
 use function apply_filters;
 use function delete_transient;
@@ -20,7 +25,7 @@ use function FrostyMedia\WpTally\sort;
 use function get_option;
 use function sanitize_user;
 use function session_write_close;
-use function strtolower;
+use function trailingslashit;
 use function update_option;
 
 // Exit if accessed directly
@@ -106,15 +111,23 @@ class Api implements WpHooksInterface
             $this->setData([
                 'error' => 'No username specified',
             ]);
-            $this->render();
+            $this->render(WP_Http::BAD_REQUEST);
         }
 
         $username = sanitize_user($query_vars[self::getQueryVar()]);
-        $lookup_count = get_option('wptally_lookups', 0);
-        $lookup_count += $lookup_count;
-        update_option('wptally_lookups', (int)$lookup_count);
+        $profile = trailingslashit(sprintf('https://profiles.wordpress.org/%s', $username));
+        $head = wp_remote_head($profile);
+        if (is_wp_error($head) || (isset($head['response']['code']) && $head['response']['code'] !== WP_Http::OK)) {
+            $this->setData([
+                'error' => 'No user found',
+            ]);
+            $this->render(WP_Http::NOT_ACCEPTABLE);
+        }
 
-        if (filter_var($query_vars['force'], FILTER_VALIDATE_BOOLEAN)) {
+        $lookup_count = get_option('wptally_lookups', 0);
+        update_option('wptally_lookups', (int)++$lookup_count);
+
+        if (isset($query_vars['force']) && filter_var($query_vars['force'], FILTER_VALIDATE_BOOLEAN)) {
             delete_transient(getTransientName($username));
             delete_transient(getTransientName($username, 'themes'));
             $force = true;
@@ -131,15 +144,15 @@ class Api implements WpHooksInterface
         $sort = $query('sort', 'desc', 'desc', 'asc');
 
         $data = [];
-        $data['info'] = [
+        $data[PluginsApi::SECTION_INFO] = [
             'user' => $username,
-            'profile' => sprintf('https://profiles.wordpress.org/%s', $username),
+            'profile' => $profile,
         ];
 
         $plugins = maybeGetPlugins($username, isset($force));
 
         if (!$plugins || is_wp_error($plugins)) {
-            $data['plugins'] = [
+            $data[PluginsApi::SECTION_PLUGINS] = [
                 'error' => sprintf('An error occurred with the plugins API: %s', $plugins->get_error_message()),
             ];
         } else {
@@ -148,7 +161,7 @@ class Api implements WpHooksInterface
             $total_downloads = 0;
 
             if ($count === 0) {
-                $data['plugins'] = [
+                $data[PluginsApi::SECTION_PLUGINS] = [
                     'error' => sprintf('No plugins found for %s.', $username),
                 ];
             } else {
@@ -156,29 +169,30 @@ class Api implements WpHooksInterface
                 $plugins = sort($plugins->getPlugins(), $order_by, $sort);
 
                 foreach ($plugins as $plugin) {
-                    $data['plugins'][$plugin->getSlug()] = [
-                        'name' => $plugin->getName(),
-                        'url' => sprintf('https://wordpress.org/plugins/%s', $plugin->getSlug()),
-                        'version' => $plugin->getVersion(),
-                        'added' => $plugin->getAdded(),
-                        'updated' => $plugin->getLastUpdated(),
-                        'rating' => getRating($plugin),
-                        'downloads' => $plugin->getDownloaded(),
-                        'installs' => $plugin->getActiveInstalls(),
+                    $slug = $plugin->getSlug();
+                    $data[PluginsApi::SECTION_PLUGINS][$slug] = [
+                        Plugin::SECTION_NAME => $plugin->getName(),
+                        'url' => sprintf('https://wordpress.org/plugins/%s', $slug),
+                        Plugin::SECTION_VERSION => $plugin->getVersion(),
+                        Plugin::SECTION_ADDED => $plugin->getAdded(),
+                        Plugin::SECTION_LAST_UPDATED => $plugin->getLastUpdated(),
+                        Plugin::SECTION_RATING => getRating($plugin),
+                        Plugin::SECTION_DOWNLOADED => $plugin->getDownloaded(),
+                        Plugin::SECTION_ACTIVE_INSTALLS => $plugin->getActiveInstalls(),
                     ];
 
                     $total_downloads += $plugin->getDownloaded();
                 }
 
-                $data['info']['plugin_count'] = $count;
-                $data['info']['total_plugin_downloads'] = $total_downloads;
+                $data[PluginsApi::SECTION_INFO]['plugin_count'] = $count;
+                $data[PluginsApi::SECTION_INFO]['total_plugin_downloads'] = $total_downloads;
             }
         }
 
         $themes = maybeGetThemes($username, isset($force));
 
         if (!$themes || is_wp_error($themes)) {
-            $data['themes'] = [
+            $data[ThemesApi::SECTION_THEMES] = [
                 'error' => sprintf('An error occurred with the themes API: %s', $themes->get_error_message()),
             ];
         } else {
@@ -187,7 +201,7 @@ class Api implements WpHooksInterface
             $total_downloads = 0;
 
             if ($count === 0) {
-                $data['themes'] = [
+                $data[ThemesApi::SECTION_THEMES] = [
                     'error' => sprintf('No themes found for %s.', $username),
                 ];
             } else {
@@ -195,20 +209,21 @@ class Api implements WpHooksInterface
                 $themes = sort($themes->getThemes(), $order_by, $sort);
 
                 foreach ($themes as $theme) {
-                    $data['themes'][$theme->getSlug()] = [
-                        'name' => $theme->getName(),
-                        'url' => sprintf('https://wordpress.org/themes/%s', $theme->getSlug()),
-                        'version' => $theme->getVersion(),
-                        'updated' => $theme->getLastUpdated(),
-                        'rating' => getRating($theme),
+                    $slug = $theme->getSlug();
+                    $data[ThemesApi::SECTION_THEMES][$slug] = [
+                        Theme::SECTION_NAME => $theme->getName(),
+                        'url' => sprintf('https://wordpress.org/themes/%s', $slug),
+                        Theme::SECTION_VERSION => $theme->getVersion(),
+                        Theme::SECTION_LAST_UPDATED => $theme->getLastUpdated(),
+                        Theme::SECTION_RATING => getRating($theme),
                         'downloads' => $theme->getDownloaded(),
                     ];
 
                     $total_downloads += $theme->getDownloaded();
                 }
 
-                $data['info']['theme_count'] = $count;
-                $data['info']['total_theme_downloads'] = $total_downloads;
+                $data[ThemesApi::SECTION_INFO]['theme_count'] = $count;
+                $data[ThemesApi::SECTION_INFO]['total_theme_downloads'] = $total_downloads;
             }
         }
 
