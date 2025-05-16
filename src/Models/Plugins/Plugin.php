@@ -100,28 +100,28 @@ class Plugin extends BaseModel
         return $this->authorProfile;
     }
 
-    private string $requires;
+    private string|false $requires;
 
-    public function setRequires(string $requires): self
+    public function setRequires(string|false $requires): self
     {
         $this->requires = $requires;
         return $this;
     }
 
-    public function getRequires(): string
+    public function getRequires(): string|false
     {
         return $this->requires;
     }
 
-    private string $tested;
+    private string|false $tested;
 
-    public function setTested(string $tested): self
+    public function setTested(string|false $tested): self
     {
         $this->tested = $tested;
         return $this;
     }
 
-    public function getTested(): string
+    public function getTested(): string|false
     {
         return $this->tested;
     }
