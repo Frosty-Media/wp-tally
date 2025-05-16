@@ -108,7 +108,7 @@ if ($username) {
             );
         } else {
             foreach ($plugins as $plugin) {
-                $rating = getRating($plugin->getNumRatings(), $plugin->getRatings());
+                $rating = getRating($plugin);
 
                 // Plugin row
                 $results .= '<div class="tally-plugin">';
@@ -168,7 +168,7 @@ if ($username) {
             }
 
             $plugins_total = number_format($count);
-            $cumulative_rating = $ratings_total / $ratings_count;
+            $cumulative_rating = absint($ratings_count) === 0 ? 0 : $ratings_total / $ratings_count;
 
             // Totals row
             $results .= '<div class="tally-plugin">';
@@ -199,17 +199,17 @@ if ($username) {
 
     $themes = maybeGetThemes($username, $query->get('force', false));
 
-    // Maybe sort themes (Disable for now)
-    // $themes = sort((array)$themes, $order_by, $sort);
-
     $results .= sprintf(
         '<div class="tally-search-results-themes"%s>',
         $active === 'themes' ? '' : ' style="display: none;"'
     );
 
-    if (is_wp_error($themes)) {
+    if (!$themes || is_wp_error($themes)) {
         $results .= '<div class="tally-search-error">An error occurred with the themes API. Please try again later.</div>';
     } else {
+        // Maybe sort themes
+        $themes = sort($themes->getThemes(), $order_by, $sort);
+
         // How many themes does the user have?
         $count = count($themes);
         $total_downloads = 0;
@@ -220,7 +220,7 @@ if ($username) {
             $results .= '<div class="tally-search-error">No themes found for ' . $username . '!</div>';
         } else {
             foreach ($themes as $theme) {
-                $rating = getRating($theme['num_ratings'], $theme['rating']);
+                $rating = getRating($theme);
 
                 // Theme row
                 $results .= '<div class="tally-plugin">';
@@ -231,16 +231,16 @@ if ($username) {
                 // Theme title
                 $results .= sprintf(
                     '<a class="tally-plugin-title" href="https://wordpress.org/themes/%1$s" target="_blank">%2$s&nbsp;&ndash;&nbsp;%3$s</a>',
-                    esc_attr($theme['slug']),
-                    esc_html($theme['name']),
-                    esc_html($theme['version']),
+                    esc_attr($theme->getSlug()),
+                    esc_html($theme->getName()),
+                    esc_html($theme->getVersion()),
                 );
 
                 // Theme meta
                 $results .= '<div class="tally-plugin-meta">';
                 $results .= sprintf(
                     '<span class="tally-plugin-meta-item"><span class="tally-plugin-meta-title">Last Updated:</span> %s</span>',
-                    esc_html(date('d M, Y', strtotime((string)$theme['last_updated'])))
+                esc_html($theme->getLastUpdated())
                 );
                 $results .= sprintf(
                     '<span class="tally-plugin-meta-item"><span class="tally-plugin-meta-title">Rating:</span> %s</span>',
@@ -255,7 +255,7 @@ if ($username) {
                 $results .= '<div class="tally-plugin-right">';
                 $results .= sprintf(
                     '<div class="tally-plugin-downloads">%s</div>',
-                    number_format($theme['downloaded'])
+                    number_format($theme->getDownloaded())
                 );
                 $results .= '<div class="tally-plugin-downloads-title">Downloads</div>';
                 $results .= '</div>';
@@ -263,7 +263,7 @@ if ($username) {
                 // End theme row
                 $results .= '</div>';
 
-                $total_downloads += $theme['downloaded'];
+                $total_downloads += $theme->getDownloaded();
 
                 if (!empty($rating)) {
                     $ratings_total += $rating;
@@ -272,7 +272,7 @@ if ($username) {
             }
 
             $themes_total = number_format($count);
-            $cumulative_rating = $ratings_total / $ratings_count;
+            $cumulative_rating = absint($ratings_count) === 0 ? 0 : $ratings_total / $ratings_count;
 
             // Totals row
             $results .= '<div class="tally-plugin">';
