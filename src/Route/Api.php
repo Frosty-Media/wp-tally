@@ -127,7 +127,7 @@ class Api implements WpHooksInterface
         $lookup_count = get_option('wptally_lookups', 0);
         update_option('wptally_lookups', (int)++$lookup_count);
 
-        if (filter_var($query_vars['force'], FILTER_VALIDATE_BOOLEAN)) {
+        if (isset($query_vars['force']) && filter_var($query_vars['force'], FILTER_VALIDATE_BOOLEAN)) {
             delete_transient(getTransientName($username));
             delete_transient(getTransientName($username, 'themes'));
             $force = true;
