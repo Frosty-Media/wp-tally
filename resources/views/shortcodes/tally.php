@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Symfony\Component\HttpFoundation\InputBag;
+use TheFrosty\WpUtilities\Api\TransientsTrait;
 use function FrostyMedia\WpTally\getRating;
 use function FrostyMedia\WpTally\getTransientName;
 use function FrostyMedia\WpTally\maybeGetPlugins;
@@ -11,6 +12,9 @@ use function FrostyMedia\WpTally\sort;
 
 /** @var InputBag $query */
 $query ??= $this->getRequest()->query;
+$transients = new class {
+    use TransientsTrait;
+};
 
 $username = $query->get('wpusername', '');
 $active = $query->has('active') && $query->get('active') === 'themes' ? 'themes' : 'plugins';
@@ -31,6 +35,23 @@ printf($search, sanitize_user($username));
 $results = '<div class="tally-search-results" id="search-results">';
 
 if ($username) {
+    // Maybe show cache timeout.
+    $cache_results = static function (string $type) use ($transients, $username): string {
+        $timeout = $transients->getTransientTimeout(getTransientName($username, $type));
+        $html = '';
+        if ($timeout) {
+            $html = '<div class="tally-cache-results"><div>';
+            $html .= sprintf(
+                '<span class="tally-cache-results-title">Cached until: </span><time datetime="%1$s" title="%3$s">%2$s</time>',
+                esc_attr(date_i18n('c', $timeout)),
+                esc_html(date_i18n('r', $timeout)),
+                esc_attr(sprintf(__('%s from now'), human_time_diff($timeout, time())))
+            );
+            $html .= '</div></div><!-- .tally-search-results-cache -->';
+        }
+        return $html;
+    };
+
     $lookup_count = get_option('wptally_lookups');
     $lookup_count = $lookup_count ? $lookup_count + 1 : 1;
     update_option('wptally_lookups', $lookup_count);
@@ -193,6 +214,7 @@ if ($username) {
             $results .= '<div class="tally-plugin-downloads-title">Total Downloads</div>';
             $results .= '</div>';
             $results .= '</div>';
+            $results .= $cache_results('plugins');
         }
     }
     $results .= '</div>';
@@ -240,7 +262,7 @@ if ($username) {
                 $results .= '<div class="tally-plugin-meta">';
                 $results .= sprintf(
                     '<span class="tally-plugin-meta-item"><span class="tally-plugin-meta-title">Last Updated:</span> %s</span>',
-                esc_html($theme->getLastUpdated())
+                    esc_html($theme->getLastUpdated())
                 );
                 $results .= sprintf(
                     '<span class="tally-plugin-meta-item"><span class="tally-plugin-meta-title">Rating:</span> %s</span>',
@@ -297,6 +319,7 @@ if ($username) {
             $results .= '<div class="tally-plugin-downloads-title">Total Downloads</div>';
             $results .= '</div>';
             $results .= '</div>';
+            $results .= $cache_results('themes');
         }
     }
     $results .= '</div>';
