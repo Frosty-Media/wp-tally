@@ -8,6 +8,7 @@ use TheFrosty\WpUtilities\Plugin\HttpFoundationRequestInterface;
 use TheFrosty\WpUtilities\Plugin\HttpFoundationRequestTrait;
 use TheFrosty\WpUtilities\Utils\Viewable;
 use function add_shortcode;
+use function dirname;
 use function filemtime;
 use function plugins_url;
 use function wp_enqueue_script;
@@ -40,8 +41,6 @@ class Tally extends AbstractContainerProvider implements HttpFoundationRequestIn
                 plugins_url('resources/css/style.css', dirname(__DIR__)),
                 filemtime(\plugin_dir_path(dirname(__DIR__)) . 'resources/css/style.css')
             );
-
-            require_once \dirname(__DIR__) . '/functions.php';
 
             return $this->getView(ServiceProvider::WP_UTILITIES_VIEW)->retrieve(
                 'shortcodes/tally',
