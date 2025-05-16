@@ -12,7 +12,6 @@ use WP_Error;
 use function delete_transient;
 use function function_exists;
 use function get_transient;
-use function is_array;
 use function plugins_api;
 use function round;
 use function set_transient;
@@ -181,8 +180,8 @@ function getRating(Plugin|Theme $api): float
 }
 
 /**
- * Sort themes or plugins.
- * @param Plugin[]|Theme[] $items The themes or plugins to sort
+ * Sort plugins or themes.
+ * @param Plugin[]|Theme[] $items The plugins or themes to sort
  * @param string $order_by The field to sort by
  * @param string $sort The direction to sort
  * @return Plugin[]|Theme[]
