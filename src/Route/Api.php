@@ -162,7 +162,7 @@ class Api implements WpHooksInterface
                         'version' => $plugin->getVersion(),
                         'added' => $plugin->getAdded(),
                         'updated' => $plugin->getLastUpdated(),
-                        'rating' => getRating($plugin->getNumRatings(), $plugin->getRating()),
+                        'rating' => getRating($plugin),
                         'downloads' => $plugin->getDownloaded(),
                         'installs' => $plugin->getActiveInstalls(),
                     ];
@@ -177,13 +177,13 @@ class Api implements WpHooksInterface
 
         $themes = maybeGetThemes($username, isset($force));
 
-        if (is_wp_error($themes)) {
+        if (!$themes || is_wp_error($themes)) {
             $data['themes'] = [
                 'error' => sprintf('An error occurred with the themes API: %s', $themes->get_error_message()),
             ];
         } else {
-            // How many plugins does the user have?
-            $count = count((array)$themes);
+            // How many themes does the user have?
+            $count = count($themes->getThemes());
             $total_downloads = 0;
 
             if ($count === 0) {
@@ -192,21 +192,19 @@ class Api implements WpHooksInterface
                 ];
             } else {
                 // Maybe sort themes
-                $themes = sort((array)$themes, $order_by, $sort);
+                $themes = sort($themes->getThemes(), $order_by, $sort);
 
                 foreach ($themes as $theme) {
-                    $rating = getRating($theme['num_ratings'], $theme['rating']);
-
-                    $data['themes'][$theme['slug']] = [
-                        'name' => $theme['name'],
-                        'url' => 'https://wordpress.org/themes/' . $theme['slug'],
-                        'version' => $theme['version'],
-                        'updated' => date('d M, Y', strtotime((string)$theme['last_updated'])),
-                        'rating' => $rating,
-                        'downloads' => $theme['downloaded'],
+                    $data['themes'][$theme->getSlug()] = [
+                        'name' => $theme->getName(),
+                        'url' => sprintf('https://wordpress.org/themes/%s', $theme->getSlug()),
+                        'version' => $theme->getVersion(),
+                        'updated' => $theme->getLastUpdated(),
+                        'rating' => getRating($theme),
+                        'downloads' => $theme->getDownloaded(),
                     ];
 
-                    $total_downloads += $theme['downloaded'];
+                    $total_downloads += $theme->getDownloaded();
                 }
 
                 $data['info']['theme_count'] = $count;
