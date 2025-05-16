@@ -25,6 +25,7 @@ use function FrostyMedia\WpTally\sort;
 use function get_option;
 use function sanitize_user;
 use function session_write_close;
+use function trailingslashit;
 use function update_option;
 
 // Exit if accessed directly
@@ -114,7 +115,7 @@ class Api implements WpHooksInterface
         }
 
         $username = sanitize_user($query_vars[self::getQueryVar()]);
-        $profile = sprintf('https://profiles.wordpress.org/%s', $username);
+        $profile = trailingslashit(sprintf('https://profiles.wordpress.org/%s', $username));
         $head = wp_remote_head($profile);
         if (is_wp_error($head) || (isset($head['response']['code']) && $head['response']['code'] !== WP_Http::OK)) {
             $this->setData([
