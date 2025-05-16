@@ -30,7 +30,7 @@ class Api extends BaseModel
     }
 
     /** @var Plugin[] $plugins */
-    private array $plugins;
+    private array $plugins = [];
 
     public function setPlugins(array $plugins): self
     {
