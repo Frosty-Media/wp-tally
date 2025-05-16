@@ -95,32 +95,40 @@ class Api implements WpHooksInterface
     protected function processQuery(): void
     {
         global $wp_query;
+        $query_vars = $wp_query->query_vars;
 
         // Bail if this isn't an "api" call.
         if (!self::hasQueryVar()) {
             return;
         }
 
-        if (empty($wp_query->query_vars[self::getQueryVar()])) {
+        if (empty($query_vars[self::getQueryVar()])) {
             $this->setData([
                 'error' => 'No username specified',
             ]);
             $this->render();
         }
 
-        $username = sanitize_user($wp_query->query_vars[self::getQueryVar()]);
+        $username = sanitize_user($query_vars[self::getQueryVar()]);
         $lookup_count = get_option('wptally_lookups', 0);
         $lookup_count += $lookup_count;
         update_option('wptally_lookups', (int)$lookup_count);
 
-        if (filter_var($wp_query->query_vars['force'], FILTER_VALIDATE_BOOLEAN)) {
+        if (filter_var($query_vars['force'], FILTER_VALIDATE_BOOLEAN)) {
             delete_transient(getTransientName($username));
             delete_transient(getTransientName($username, 'themes'));
             $force = true;
         }
 
-        $order_by = (isset($wp_query->query_vars['order-by']) && $wp_query->query_vars['order-by'] === 'downloads' ? 'downloaded' : 'name');
-        $sort = (isset($wp_query->query_vars['sort']) && strtolower($wp_query->query_vars['sort']) === 'desc' ? 'desc' : 'asc');
+        $query = static fn(
+            string $key,
+            string $value,
+            string $default,
+            string $fallback
+        ): string => isset($query_vars[$key]) && $query_vars[$key] === $value ? $default : $fallback;
+
+        $order_by = $query('order-by', 'downloads', 'downloaded', 'name');
+        $sort = $query('sort', 'desc', 'desc', 'asc');
 
         $data = [];
         $data['info'] = [
@@ -211,11 +219,9 @@ class Api implements WpHooksInterface
     }
 
     /**
-     * Register new query vars
-     * @access public
-     * @param array $vars Existing query vars
-     * @return array $vars Updated query vars
-     * @since 1.0.0
+     * Register new query vars.
+     * @param array $vars
+     * @return array
      */
     protected function queryVars(array $vars): array
     {
