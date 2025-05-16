@@ -33,7 +33,7 @@ if (!defined('ABSPATH')) {
  */
 function getTransientName(string $username, string $type = 'plugins'): string
 {
-    return sprintf('wp-tally-user-%s_%s', $username, $type);
+    return sprintf('wp-tally-user-%s_%s', sanitize_user($username), $type);
 }
 
 /**
