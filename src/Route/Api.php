@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace FrostyMedia\WpTally\Route;
 
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use TheFrosty\WpUtilities\Plugin\HooksTrait;
 use TheFrosty\WpUtilities\Plugin\WpHooksInterface;
 use function add_rewrite_endpoint;
@@ -17,6 +19,7 @@ use function FrostyMedia\WpTally\maybeGetThemes;
 use function FrostyMedia\WpTally\sort;
 use function get_option;
 use function sanitize_user;
+use function session_write_close;
 use function strtolower;
 use function update_option;
 
@@ -26,7 +29,7 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Api class.
+ * Class Api.
  */
 class Api implements WpHooksInterface
 {
@@ -88,7 +91,6 @@ class Api implements WpHooksInterface
 
     /**
      * Listen for the API and process requests
-     * @throws \JsonException
      */
     protected function processQuery(): void
     {
@@ -236,19 +238,10 @@ class Api implements WpHooksInterface
      * Render and encode.
      * @param int $status_code The status code to return
      * @return never
-     * @throws \JsonException
      */
-    private function render(int $status_code = 200): never
+    private function render(int $status_code = Response::HTTP_OK): never
     {
-        status_header($status_code);
-        header('Content-Type: application/json');
-
-        if (defined('JSON_PRETTY_PRINT')) {
-            echo json_encode($this->data, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
-        } else {
-            echo json_encode($this->data, JSON_THROW_ON_ERROR);
-        }
-
+        (new JsonResponse($this->data, $status_code))->send();
         session_write_close();
         exit;
     }
