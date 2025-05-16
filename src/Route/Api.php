@@ -95,48 +95,56 @@ class Api implements WpHooksInterface
     protected function processQuery(): void
     {
         global $wp_query;
+        $query_vars = $wp_query->query_vars;
 
         // Bail if this isn't an "api" call.
         if (!self::hasQueryVar()) {
             return;
         }
 
-        if (empty($wp_query->query_vars[self::getQueryVar()])) {
+        if (empty($query_vars[self::getQueryVar()])) {
             $this->setData([
                 'error' => 'No username specified',
             ]);
             $this->render();
         }
 
-        $username = sanitize_user($wp_query->query_vars[self::getQueryVar()]);
+        $username = sanitize_user($query_vars[self::getQueryVar()]);
         $lookup_count = get_option('wptally_lookups', 0);
         $lookup_count += $lookup_count;
         update_option('wptally_lookups', (int)$lookup_count);
 
-        if (filter_var($wp_query->query_vars['force'], FILTER_VALIDATE_BOOLEAN)) {
+        if (filter_var($query_vars['force'], FILTER_VALIDATE_BOOLEAN)) {
             delete_transient(getTransientName($username));
             delete_transient(getTransientName($username, 'themes'));
             $force = true;
         }
 
-        $order_by = (isset($wp_query->query_vars['order-by']) && $wp_query->query_vars['order-by'] === 'downloads' ? 'downloaded' : 'name');
-        $sort = (isset($wp_query->query_vars['sort']) && strtolower($wp_query->query_vars['sort']) === 'desc' ? 'desc' : 'asc');
+        $query = static fn(
+            string $key,
+            string $value,
+            string $default,
+            string $fallback
+        ): string => isset($query_vars[$key]) && $query_vars[$key] === $value ? $default : $fallback;
+
+        $order_by = $query('order-by', 'downloads', 'downloaded', 'name');
+        $sort = $query('sort', 'desc', 'desc', 'asc');
 
         $data = [];
         $data['info'] = [
             'user' => $username,
-            'profile' => 'https://profiles.wordpress.org/' . $username,
+            'profile' => sprintf('https://profiles.wordpress.org/%s', $username),
         ];
 
         $plugins = maybeGetPlugins($username, isset($force));
 
-        if (is_wp_error($plugins)) {
+        if (!$plugins || is_wp_error($plugins)) {
             $data['plugins'] = [
                 'error' => sprintf('An error occurred with the plugins API: %s', $plugins->get_error_message()),
             ];
         } else {
             // How many plugins does the user have?
-            $count = count($plugins->plugins);
+            $count = count($plugins->getPlugins());
             $total_downloads = 0;
 
             if ($count === 0) {
@@ -145,23 +153,21 @@ class Api implements WpHooksInterface
                 ];
             } else {
                 // Maybe sort plugins
-                $plugins = sort((array)$plugins->plugins, $order_by, $sort);
+                $plugins = sort($plugins->getPlugins(), $order_by, $sort);
 
                 foreach ($plugins as $plugin) {
-                    $rating = getRating($plugin['num_ratings'], $plugin['ratings']);
-
-                    $data['plugins'][$plugin['slug']] = [
-                        'name' => $plugin['name'],
-                        'url' => 'https://wordpress.org/plugins/' . $plugin['slug'],
-                        'version' => $plugin['version'],
-                        'added' => date('d M, Y', strtotime((string)$plugin['added'])),
-                        'updated' => date('d M, Y', strtotime((string)$plugin['last_updated'])),
-                        'rating' => $rating,
-                        'downloads' => $plugin['downloaded'],
-                        'installs' => $plugin['active_installs'],
+                    $data['plugins'][$plugin->getSlug()] = [
+                        'name' => $plugin->getName(),
+                        'url' => sprintf('https://wordpress.org/plugins/%s', $plugin->getSlug()),
+                        'version' => $plugin->getVersion(),
+                        'added' => $plugin->getAdded(),
+                        'updated' => $plugin->getLastUpdated(),
+                        'rating' => getRating($plugin),
+                        'downloads' => $plugin->getDownloaded(),
+                        'installs' => $plugin->getActiveInstalls(),
                     ];
 
-                    $total_downloads += $plugin['downloaded'];
+                    $total_downloads += $plugin->getDownloaded();
                 }
 
                 $data['info']['plugin_count'] = $count;
@@ -171,13 +177,13 @@ class Api implements WpHooksInterface
 
         $themes = maybeGetThemes($username, isset($force));
 
-        if (is_wp_error($themes)) {
+        if (!$themes || is_wp_error($themes)) {
             $data['themes'] = [
                 'error' => sprintf('An error occurred with the themes API: %s', $themes->get_error_message()),
             ];
         } else {
-            // How many plugins does the user have?
-            $count = count((array)$themes);
+            // How many themes does the user have?
+            $count = count($themes->getThemes());
             $total_downloads = 0;
 
             if ($count === 0) {
@@ -186,21 +192,19 @@ class Api implements WpHooksInterface
                 ];
             } else {
                 // Maybe sort themes
-                $themes = sort((array)$themes, $order_by, $sort);
+                $themes = sort($themes->getThemes(), $order_by, $sort);
 
                 foreach ($themes as $theme) {
-                    $rating = getRating($theme['num_ratings'], $theme['rating']);
-
-                    $data['themes'][$theme['slug']] = [
-                        'name' => $theme['name'],
-                        'url' => 'https://wordpress.org/themes/' . $theme['slug'],
-                        'version' => $theme['version'],
-                        'updated' => date('d M, Y', strtotime((string)$theme['last_updated'])),
-                        'rating' => $rating,
-                        'downloads' => $theme['downloaded'],
+                    $data['themes'][$theme->getSlug()] = [
+                        'name' => $theme->getName(),
+                        'url' => sprintf('https://wordpress.org/themes/%s', $theme->getSlug()),
+                        'version' => $theme->getVersion(),
+                        'updated' => $theme->getLastUpdated(),
+                        'rating' => getRating($theme),
+                        'downloads' => $theme->getDownloaded(),
                     ];
 
-                    $total_downloads += $theme['downloaded'];
+                    $total_downloads += $theme->getDownloaded();
                 }
 
                 $data['info']['theme_count'] = $count;
@@ -213,11 +217,9 @@ class Api implements WpHooksInterface
     }
 
     /**
-     * Register new query vars
-     * @access public
-     * @param array $vars Existing query vars
-     * @return array $vars Updated query vars
-     * @since 1.0.0
+     * Register new query vars.
+     * @param array $vars
+     * @return array
      */
     protected function queryVars(array $vars): array
     {
