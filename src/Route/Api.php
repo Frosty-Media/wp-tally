@@ -111,7 +111,7 @@ class Api implements WpHooksInterface
             $this->setData([
                 'error' => 'No username specified',
             ]);
-            $this->render();
+            $this->render(WP_Http::BAD_REQUEST);
         }
 
         $username = sanitize_user($query_vars[self::getQueryVar()]);
@@ -121,7 +121,7 @@ class Api implements WpHooksInterface
             $this->setData([
                 'error' => 'No user found',
             ]);
-            $this->render();
+            $this->render(WP_Http::NOT_ACCEPTABLE);
         }
 
         $lookup_count = get_option('wptally_lookups', 0);
@@ -169,9 +169,10 @@ class Api implements WpHooksInterface
                 $plugins = sort($plugins->getPlugins(), $order_by, $sort);
 
                 foreach ($plugins as $plugin) {
-                    $data[PluginsApi::SECTION_PLUGINS][$plugin->getSlug()] = [
+                    $slug = $plugin->getSlug();
+                    $data[PluginsApi::SECTION_PLUGINS][$slug] = [
                         Plugin::SECTION_NAME => $plugin->getName(),
-                        'url' => sprintf('https://wordpress.org/plugins/%s', $plugin->getSlug()),
+                        'url' => sprintf('https://wordpress.org/plugins/%s', $slug),
                         Plugin::SECTION_VERSION => $plugin->getVersion(),
                         Plugin::SECTION_ADDED => $plugin->getAdded(),
                         Plugin::SECTION_LAST_UPDATED => $plugin->getLastUpdated(),
@@ -208,9 +209,10 @@ class Api implements WpHooksInterface
                 $themes = sort($themes->getThemes(), $order_by, $sort);
 
                 foreach ($themes as $theme) {
-                    $data[ThemesApi::SECTION_THEMES][$theme->getSlug()] = [
+                    $slug = $theme->getSlug();
+                    $data[ThemesApi::SECTION_THEMES][$slug] = [
                         Theme::SECTION_NAME => $theme->getName(),
-                        'url' => sprintf('https://wordpress.org/themes/%s', $theme->getSlug()),
+                        'url' => sprintf('https://wordpress.org/themes/%s', $slug),
                         Theme::SECTION_VERSION => $theme->getVersion(),
                         Theme::SECTION_LAST_UPDATED => $theme->getLastUpdated(),
                         Theme::SECTION_RATING => getRating($theme),
