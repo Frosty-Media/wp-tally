@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace FrostyMedia\WpTally\Shortcodes;
 
 use FrostyMedia\WpTally\ServiceProvider;
