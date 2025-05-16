@@ -40,7 +40,7 @@ if ($username) {
         delete_transient(getTransientName($username, 'themes'));
     }
 
-    $plugins = maybeGetPlugins($username, $query->get('force', false));
+    $plugins = maybeGetPlugins($username, filter_var($query->get('force', false), FILTER_VALIDATE_BOOLEAN));
 
     $results .= '<div class="tally-search-results-wrapper">';
     $results .= sprintf(
@@ -197,7 +197,7 @@ if ($username) {
     }
     $results .= '</div>';
 
-    $themes = maybeGetThemes($username, $query->get('force', false));
+    $themes = maybeGetThemes($username, filter_var($query->get('force', false), FILTER_VALIDATE_BOOLEAN));
 
     $results .= sprintf(
         '<div class="tally-search-results-themes"%s>',
