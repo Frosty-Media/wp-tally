@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace FrostyMedia\WpTally;
 
+use FrostyMedia\WpTally\Models\Plugins\Api;
+use FrostyMedia\WpTally\Models\Plugins\Plugin;
 use WP_Error;
 use function delete_transient;
 use function function_exists;
@@ -37,9 +39,9 @@ function getTransientName(string $username, string $type = 'plugins'): string
  * Get a users plugin data.
  * @param false|string $username The user to check
  * @param bool $force Forcibly remove any existing transient and requery
- * @return array|object|false $plugins The users plugins
+ * @return Api|WP_Error|false $plugins The users plugins
  */
-function maybeGetPlugins(false|string $username = false, bool $force = false): array|object|false
+function maybeGetPlugins(false|string $username = false, bool $force = false): Api|WP_Error|false
 {
     if (!$username) {
         return false;
@@ -54,7 +56,7 @@ function maybeGetPlugins(false|string $username = false, bool $force = false): a
     }
 
     $plugins = get_transient(getTransientName($username));
-    if (!$plugins) {
+    if (!$plugins instanceof Api) {
         $plugins = plugins_api(
             'query_plugins',
             [
@@ -80,7 +82,8 @@ function maybeGetPlugins(false|string $username = false, bool $force = false): a
             return $plugins;
         }
 
-        if (isset($plugins->info->results) && $plugins->info->results === 0) {
+        $plugins = new Api((array)$plugins);
+        if ($plugins->getInfo()->getResults() === 0) {
             $expiration = MONTH_IN_SECONDS;
         }
         set_transient(getTransientName($username), $plugins, $expiration ?? DAY_IN_SECONDS);
@@ -198,27 +201,24 @@ function getRating(int $num_ratings, mixed $ratings): float|int
 }
 
 /**
- * Sort themes/plugins/
- * @param array $items The themes or plugins to sort
+ * Sort themes or plugins.
+ * @param Plugin[] $items The themes or plugins to sort
  * @param string $order_by The field to sort by
  * @param string $sort The direction to sort
- * @return array $items The sorted items
- * @since 1.2.0
+ * @return Plugin[]
  */
 function sort(array $items, string $order_by, string $sort): array
 {
     if ($order_by === 'downloaded') {
         if ($sort === 'desc') {
-            usort($items, static fn($a, $b) => $b['downloaded'] - $a['downloaded']);
+            usort($items, static fn(Plugin $a, Plugin $b) => $b->getDownloaded() - $a->getDownloaded());
         } else {
-            usort($items, static fn($a, $b) => $a['downloaded'] - $b['downloaded']);
+            usort($items, static fn(Plugin $a, Plugin $b) => $a->getDownloaded() - $b->getDownloaded());
         }
+    } elseif ($sort === 'desc') {
+        usort($items, static fn(Plugin $a, Plugin $b) => strcmp($b->getSlug(), $a->getSlug()));
     } else {
-        if ($sort === 'desc') {
-            usort($items, static fn($a, $b) => strcmp((string)$b['slug'], (string)$a['slug']));
-        } else {
-            usort($items, static fn($a, $b) => strcmp((string)$a['slug'], (string)$b['slug']));
-        }
+        usort($items, static fn(Plugin $a, Plugin $b) => strcmp($a->getSlug(), $b->getSlug()));
     }
 
     return $items;

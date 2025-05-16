@@ -125,18 +125,18 @@ class Api implements WpHooksInterface
         $data = [];
         $data['info'] = [
             'user' => $username,
-            'profile' => 'https://profiles.wordpress.org/' . $username,
+            'profile' => sprintf('https://profiles.wordpress.org/%s', $username),
         ];
 
         $plugins = maybeGetPlugins($username, isset($force));
 
-        if (is_wp_error($plugins)) {
+        if (!$plugins || is_wp_error($plugins)) {
             $data['plugins'] = [
                 'error' => sprintf('An error occurred with the plugins API: %s', $plugins->get_error_message()),
             ];
         } else {
             // How many plugins does the user have?
-            $count = count($plugins->plugins);
+            $count = count($plugins->getPlugins());
             $total_downloads = 0;
 
             if ($count === 0) {
@@ -145,23 +145,21 @@ class Api implements WpHooksInterface
                 ];
             } else {
                 // Maybe sort plugins
-                $plugins = sort((array)$plugins->plugins, $order_by, $sort);
+                $plugins = sort($plugins->getPlugins(), $order_by, $sort);
 
                 foreach ($plugins as $plugin) {
-                    $rating = getRating($plugin['num_ratings'], $plugin['ratings']);
-
-                    $data['plugins'][$plugin['slug']] = [
-                        'name' => $plugin['name'],
-                        'url' => 'https://wordpress.org/plugins/' . $plugin['slug'],
-                        'version' => $plugin['version'],
-                        'added' => date('d M, Y', strtotime((string)$plugin['added'])),
-                        'updated' => date('d M, Y', strtotime((string)$plugin['last_updated'])),
-                        'rating' => $rating,
-                        'downloads' => $plugin['downloaded'],
-                        'installs' => $plugin['active_installs'],
+                    $data['plugins'][$plugin->getSlug()] = [
+                        'name' => $plugin->getName(),
+                        'url' => sprintf('https://wordpress.org/plugins/%s', $plugin->getSlug()),
+                        'version' => $plugin->getVersion(),
+                        'added' => $plugin->getAdded(),
+                        'updated' => $plugin->getLastUpdated(),
+                        'rating' => getRating($plugin->getNumRatings(), $plugin->getRating()),
+                        'downloads' => $plugin->getDownloaded(),
+                        'installs' => $plugin->getActiveInstalls(),
                     ];
 
-                    $total_downloads += $plugin['downloaded'];
+                    $total_downloads += $plugin->getDownloaded();
                 }
 
                 $data['info']['plugin_count'] = $count;
