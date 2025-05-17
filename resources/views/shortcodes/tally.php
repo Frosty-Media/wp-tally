@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use FrostyMedia\WpTally\Stats\Lookup;
 use TheFrosty\WpUtilities\Api\TransientsTrait;
 use function FrostyMedia\WpTally\getRating;
 use function FrostyMedia\WpTally\getTransientName;
@@ -53,10 +52,6 @@ if ($username) {
         }
         return $html;
     };
-
-    /** @var FrostyMedia\WpTally\Stats\Lookup $lookup */
-    $lookup->updateCount();
-    $lookup->updateUser($username, Lookup::VIEW_SHORTCODE);
 
     if ($query->has('force') && filter_var($query->get('force'), FILTER_VALIDATE_BOOLEAN)) {
         delete_transient(getTransientName($username));
