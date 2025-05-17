@@ -13,6 +13,10 @@ use function plugins_url;
 use function printf;
 use function wp_enqueue_style;
 
+/**
+ * Class DashboardWidget.
+ * @package FrostyMedia\WpTally\WpAdmin
+ */
 class DashboardWidget extends AbstractContainerProvider
 {
     /**
@@ -39,6 +43,7 @@ class DashboardWidget extends AbstractContainerProvider
 
     /**
      * Load admin scripts and styles
+     * @param string $hook
      */
     protected function adminEnqueueScripts(string $hook): void
     {
