@@ -10,11 +10,15 @@ use FrostyMedia\WpTally\Models\Themes\Api as ThemesApi;
 use FrostyMedia\WpTally\Models\Themes\Theme;
 use FrostyMedia\WpTally\Route\Api;
 use WP_Error;
+use WP_Http;
 use function delete_transient;
+use function esc_url_raw;
 use function function_exists;
 use function get_transient;
 use function home_url;
+use function is_wp_error;
 use function json_decode;
+use function json_last_error;
 use function plugins_api;
 use function round;
 use function set_transient;
@@ -24,7 +28,10 @@ use function themes_api;
 use function trailingslashit;
 use function usort;
 use function wp_remote_retrieve_body;
+use function wp_remote_retrieve_header;
+use function wp_remote_retrieve_response_code;
 use function wp_safe_remote_get;
+use const JSON_ERROR_NONE;
 use const JSON_THROW_ON_ERROR;
 
 /**
@@ -37,6 +44,7 @@ function getTallyUrl(): string
 }
 
 /**
+ * Get the tally.
  * @param string|null $username
  * @return object|null
  * @throws \JsonException
@@ -44,13 +52,26 @@ function getTallyUrl(): string
 function getTally(?string $username = null): ?object
 {
     $url = sprintf('%s%s', getTallyUrl(), $username);
-    $response = wp_remote_retrieve_body(wp_safe_remote_get($url));
+    $response = wp_safe_remote_get(
+        esc_url_raw($url),
+        [
+            'headers' => [
+                'Accept' => 'application/json',
+                'referer' => Api::getHttpReferrer(),
+            ],
+        ]
+    );
 
-    if ($response === '') {
+    if (
+        is_wp_error($response) ||
+        wp_remote_retrieve_response_code($response) !== WP_Http::OK ||
+        !str_contains(wp_remote_retrieve_header($response, 'content-type'), 'json')
+    ) {
         return null;
     }
 
-    return json_decode($response, false, flags: JSON_THROW_ON_ERROR);
+    $tally = json_decode(wp_remote_retrieve_body($response), false, flags: JSON_THROW_ON_ERROR);
+    return json_last_error() === JSON_ERROR_NONE ? $tally : null;
 }
 
 /**
