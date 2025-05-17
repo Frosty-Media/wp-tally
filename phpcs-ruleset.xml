@@ -27,6 +27,7 @@
     <config name="testVersion" value="8.3-"/>
 
     <rule ref="WordPress-Docs">
+        <exclude name="Generic.Commenting.DocComment.MissingShort"/>
         <exclude name="Generic.Commenting.DocComment.SpacingBeforeTags"/>
         <exclude name="Squiz.Commenting.FileComment.Missing"/>
         <exclude name="Squiz.Commenting.FunctionComment.MissingParamComment"/>
