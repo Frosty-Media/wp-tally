@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use FrostyMedia\WpTally\Stats\Lookup;
-use Symfony\Component\HttpFoundation\InputBag;
 use TheFrosty\WpUtilities\Api\TransientsTrait;
 use function FrostyMedia\WpTally\getRating;
 use function FrostyMedia\WpTally\getTransientName;
@@ -11,7 +10,9 @@ use function FrostyMedia\WpTally\maybeGetPlugins;
 use function FrostyMedia\WpTally\maybeGetThemes;
 use function FrostyMedia\WpTally\sort;
 
-/** @var InputBag $query */
+/** @phpcs:disable Generic.Files.LineLength.TooLong */
+
+/** @var Symfony\Component\HttpFoundation\InputBag $query */
 $query ??= $this->getRequest()->query;
 $transients = new class {
     use TransientsTrait;
@@ -46,14 +47,14 @@ if ($username) {
                 '<span class="tally-cache-results-title">Cached until: </span><time datetime="%1$s" title="%3$s">%2$s</time>',
                 esc_attr(date_i18n('c', $timeout)),
                 esc_html(date_i18n('r', $timeout)),
-                esc_attr(sprintf(__('%s from now'), human_time_diff($timeout, time())))
+                esc_attr(sprintf(__('%s from now', 'wp-tally'), human_time_diff($timeout, time())))
             );
             $html .= '</div></div><!-- .tally-search-results-cache -->';
         }
         return $html;
     };
 
-    /** @var \FrostyMedia\WpTally\Stats\Lookup $lookup */
+    /** @var FrostyMedia\WpTally\Stats\Lookup $lookup */
     $lookup->updateCount();
     $lookup->updateUser($username, Lookup::VIEW_SHORTCODE);
 
@@ -114,7 +115,7 @@ if ($username) {
     if (!$plugins || is_wp_error($plugins)) {
         $results .= '<div class="tally-search-error">An error occurred with the plugins API. Please try again later.</div>';
     } else {
-        // Maybe sort plugins
+        // Maybe sort plugins.
         $plugins = sort($plugins->getPlugins(), $order_by, $sort);
 
         // How many plugins does the user have?
@@ -132,13 +133,13 @@ if ($username) {
             foreach ($plugins as $plugin) {
                 $rating = getRating($plugin);
 
-                // Plugin row
+                // Plugin row.
                 $results .= '<div class="tally-plugin">';
 
-                // Content left
+                // Content left.
                 $results .= '<div class="tally-plugin-left">';
 
-                // Plugin title
+                // Plugin title.
                 $results .= sprintf(
                     '<a class="tally-plugin-title" href="https://wordpress.org/plugins/%1$s" target="_blank">%2$s&nbsp;&ndash;&nbsp;%3$s</a>',
                     esc_attr($plugin->getSlug()),
@@ -146,7 +147,7 @@ if ($username) {
                     esc_html($plugin->getVersion()),
                 );
 
-                // Plugin meta
+                // Plugin meta.
                 $results .= '<div class="tally-plugin-meta">';
                 $results .= sprintf(
                     '<span class="tally-plugin-meta-item"><span class="tally-plugin-meta-title">Added:</span> %s</span>',
@@ -166,10 +167,10 @@ if ($username) {
                 );
                 $results .= '</div>';
 
-                // End content left
+                // End content left.
                 $results .= '</div>';
 
-                // Content right
+                // Content right.
                 $results .= '<div class="tally-plugin-right">';
                 $results .= sprintf(
                     '<div class="tally-plugin-downloads">%s</div>',
@@ -178,7 +179,7 @@ if ($username) {
                 $results .= '<div class="tally-plugin-downloads-title">Downloads</div>';
                 $results .= '</div>';
 
-                // End plugin row
+                // End plugin row.
                 $results .= '</div>';
 
                 $total_downloads += $plugin->getDownloaded();
@@ -192,7 +193,7 @@ if ($username) {
             $plugins_total = number_format($count);
             $cumulative_rating = absint($ratings_count) === 0 ? 0 : $ratings_total / $ratings_count;
 
-            // Totals row
+            // Totals row.
             $results .= '<div class="tally-plugin">';
             $results .= '<div class="tally-plugin-left">';
             $results .= '<div class="tally-info">';
@@ -230,7 +231,7 @@ if ($username) {
     if (!$themes || is_wp_error($themes)) {
         $results .= '<div class="tally-search-error">An error occurred with the themes API. Please try again later.</div>';
     } else {
-        // Maybe sort themes
+        // Maybe sort themes.
         $themes = sort($themes->getThemes(), $order_by, $sort);
 
         // How many themes does the user have?
@@ -245,13 +246,13 @@ if ($username) {
             foreach ($themes as $theme) {
                 $rating = getRating($theme);
 
-                // Theme row
+                // Theme row.
                 $results .= '<div class="tally-plugin">';
 
-                // Content left
+                // Content left.
                 $results .= '<div class="tally-plugin-left">';
 
-                // Theme title
+                // Theme title.
                 $results .= sprintf(
                     '<a class="tally-plugin-title" href="https://wordpress.org/themes/%1$s" target="_blank">%2$s&nbsp;&ndash;&nbsp;%3$s</a>',
                     esc_attr($theme->getSlug()),
@@ -259,7 +260,7 @@ if ($username) {
                     esc_html($theme->getVersion()),
                 );
 
-                // Theme meta
+                // Theme meta.
                 $results .= '<div class="tally-plugin-meta">';
                 $results .= sprintf(
                     '<span class="tally-plugin-meta-item"><span class="tally-plugin-meta-title">Last Updated:</span> %s</span>',
@@ -271,10 +272,10 @@ if ($username) {
                 );
                 $results .= '</div>';
 
-                // End content left
+                // End content left.
                 $results .= '</div>';
 
-                // Content right
+                // Content right.
                 $results .= '<div class="tally-plugin-right">';
                 $results .= sprintf(
                     '<div class="tally-plugin-downloads">%s</div>',
@@ -283,7 +284,7 @@ if ($username) {
                 $results .= '<div class="tally-plugin-downloads-title">Downloads</div>';
                 $results .= '</div>';
 
-                // End theme row
+                // End theme row.
                 $results .= '</div>';
 
                 $total_downloads += $theme->getDownloaded();
@@ -297,7 +298,7 @@ if ($username) {
             $themes_total = number_format($count);
             $cumulative_rating = absint($ratings_count) === 0 ? 0 : $ratings_total / $ratings_count;
 
-            // Totals row
+            // Totals row.
             $results .= '<div class="tally-plugin">';
             $results .= '<div class="tally-plugin-left">';
             $results .= '<div class="tally-info">';

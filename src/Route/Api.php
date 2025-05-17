@@ -25,6 +25,7 @@ use function FrostyMedia\WpTally\sort;
 use function sanitize_user;
 use function session_write_close;
 use function trailingslashit;
+use const FILTER_VALIDATE_BOOLEAN;
 
 /**
  * Class Api.
@@ -32,9 +33,31 @@ use function trailingslashit;
  */
 class Api extends AbstractContainerProvider
 {
+    public const string HOOK_NAME_DISABLE_API = 'frosty_media_wp_tally_disable_api';
+    public const string HOOK_NAME_HTTP_REFERRER = 'frosty_media_wp_tally_http_referrer';
 
     public const string HOOK_NAME_QUERY_VAR = 'frosty_media_wp_tally_query_var';
     private array $data = [];
+
+    /**
+     * Get the HTTP_REFERRER value.
+     * @return string
+     * @uses apply_filters()
+     */
+    public static function getHttpReferrer(): string
+    {
+        return apply_filters(self::HOOK_NAME_HTTP_REFERRER, home_url());
+    }
+
+    /**
+     * Get the registered "query_var" key.
+     * @return string
+     * @uses apply_filters()
+     */
+    public static function getQueryVar(): string
+    {
+        return apply_filters(self::HOOK_NAME_QUERY_VAR, 'wp-tally');
+    }
 
     /**
      * Does the current WP_Query->query_vars contain our variable (defaults to "wp-tally" (previously "api"))?
@@ -88,6 +111,18 @@ class Api extends AbstractContainerProvider
      */
     protected function processQuery(): void
     {
+        /** @var \Symfony\Component\HttpFoundation\Request $request */
+        $request = $this->getContainer()->get(ServiceProvider::REQUEST);
+        /**
+         * Disable the API if filtered off.
+         * @param bool $disable
+         */
+        if (
+            filter_var(apply_filters(self::HOOK_NAME_DISABLE_API, false), FILTER_VALIDATE_BOOLEAN) &&
+            $request->server->get('HTTP_REFERER') !== self::getHttpReferrer()
+        ) {
+            return;
+        }
         global $wp_query;
         $query_vars = $wp_query->query_vars;
 
@@ -235,16 +270,6 @@ class Api extends AbstractContainerProvider
         $vars[] = 'force';
 
         return $vars;
-    }
-
-    /**
-     * Get the registered "query_var" key.
-     * @return string
-     * @uses apply_filters()
-     */
-    protected static function getQueryVar(): string
-    {
-        return apply_filters(self::HOOK_NAME_QUERY_VAR, 'wp-tally');
     }
 
     /**
