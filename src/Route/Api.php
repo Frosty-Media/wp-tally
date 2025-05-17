@@ -8,10 +8,10 @@ use FrostyMedia\WpTally\Models\Plugins\Api as PluginsApi;
 use FrostyMedia\WpTally\Models\Plugins\Plugin;
 use FrostyMedia\WpTally\Models\Themes\Api as ThemesApi;
 use FrostyMedia\WpTally\Models\Themes\Theme;
+use FrostyMedia\WpTally\ServiceProvider;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-use TheFrosty\WpUtilities\Plugin\HooksTrait;
-use TheFrosty\WpUtilities\Plugin\WpHooksInterface;
+use TheFrosty\WpUtilities\Plugin\AbstractContainerProvider;
 use WP_Http;
 use function add_rewrite_endpoint;
 use function apply_filters;
@@ -22,29 +22,17 @@ use function FrostyMedia\WpTally\getTransientName;
 use function FrostyMedia\WpTally\maybeGetPlugins;
 use function FrostyMedia\WpTally\maybeGetThemes;
 use function FrostyMedia\WpTally\sort;
-use function get_option;
 use function sanitize_user;
 use function session_write_close;
 use function trailingslashit;
-use function update_option;
-
-// Exit if accessed directly
-if (!defined('ABSPATH')) {
-    exit;
-}
 
 /**
  * Class Api.
  */
-class Api implements WpHooksInterface
+class Api extends AbstractContainerProvider
 {
 
-    use HooksTrait;
-
-    /**
-     * Data.
-     * @var array $data
-     */
+    public const string HOOK_NAME_QUERY_VAR = 'frosty_media_wp_tally_query_var';
     private array $data = [];
 
     /**
@@ -124,8 +112,10 @@ class Api implements WpHooksInterface
             $this->render(WP_Http::NOT_ACCEPTABLE);
         }
 
-        $lookup_count = get_option('wptally_lookups', 0);
-        update_option('wptally_lookups', (int)++$lookup_count);
+        /** @var \FrostyMedia\WpTally\Stats\Lookup $lookup */
+        $lookup = $this->getContainer()->get(ServiceProvider::API);
+        $lookup->updateCount();
+        $lookup->updateUser($username);
 
         if (isset($query_vars['force']) && filter_var($query_vars['force'], FILTER_VALIDATE_BOOLEAN)) {
             delete_transient(getTransientName($username));
@@ -165,7 +155,7 @@ class Api implements WpHooksInterface
                     'error' => sprintf('No plugins found for %s.', $username),
                 ];
             } else {
-                // Maybe sort plugins
+                // Maybe sort plugins.
                 $plugins = sort($plugins->getPlugins(), $order_by, $sort);
 
                 foreach ($plugins as $plugin) {
@@ -205,7 +195,7 @@ class Api implements WpHooksInterface
                     'error' => sprintf('No themes found for %s.', $username),
                 ];
             } else {
-                // Maybe sort themes
+                // Maybe sort themes.
                 $themes = sort($themes->getThemes(), $order_by, $sort);
 
                 foreach ($themes as $theme) {
@@ -246,9 +236,14 @@ class Api implements WpHooksInterface
         return $vars;
     }
 
+    /**
+     * Get the registered "query_var" key.
+     * @return string
+     * @uses apply_filters()
+     */
     protected static function getQueryVar(): string
     {
-        return apply_filters('frosty_media_wp_tally_query_var', 'wp-tally');
+        return apply_filters(self::HOOK_NAME_QUERY_VAR, 'wp-tally');
     }
 
     /**
