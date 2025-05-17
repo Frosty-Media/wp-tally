@@ -37,6 +37,16 @@ class Api extends AbstractContainerProvider
     private array $data = [];
 
     /**
+     * Get the registered "query_var" key.
+     * @return string
+     * @uses apply_filters()
+     */
+    public static function getQueryVar(): string
+    {
+        return apply_filters(self::HOOK_NAME_QUERY_VAR, 'wp-tally');
+    }
+
+    /**
      * Does the current WP_Query->query_vars contain our variable (defaults to "wp-tally" (previously "api"))?
      * @return bool
      */
@@ -235,16 +245,6 @@ class Api extends AbstractContainerProvider
         $vars[] = 'force';
 
         return $vars;
-    }
-
-    /**
-     * Get the registered "query_var" key.
-     * @return string
-     * @uses apply_filters()
-     */
-    protected static function getQueryVar(): string
-    {
-        return apply_filters(self::HOOK_NAME_QUERY_VAR, 'wp-tally');
     }
 
     /**
