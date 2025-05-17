@@ -21,16 +21,27 @@ class Lookup
     protected const string USERS_COUNT = 'count';
     protected const string USERS_VIEW = 'view';
 
+    /**
+     * Get the option.
+     * @return array
+     */
     public function getOption(): array
     {
         return get_option(self::OPTION, $this->getDefault());
     }
 
+    /**
+     * Get the total count.
+     * @return int
+     */
     public function getTotalCount(): int
     {
         return absint($this->getOption()[self::TOTAL_COUNT]);
     }
 
+    /**
+     * Update the total count.
+     */
     public function updateCount(): void
     {
         $option = $this->getOption();
@@ -38,6 +49,11 @@ class Lookup
         $this->updateOption($option);
     }
 
+    /**
+     * Update the current users count.
+     * @param string $username
+     * @param string $view
+     */
     public function updateUser(string $username, string $view = self::VIEW_API): void
     {
         $option = $this->getOption();
@@ -56,11 +72,19 @@ class Lookup
         $this->updateOption($option);
     }
 
+    /**
+     * Update the option.
+     * @param array $option
+     */
     private function updateOption(array $option): void
     {
         update_option(self::OPTION, $option);
     }
 
+    /**
+     * The default option array model.
+     * @return array
+     */
     private function getDefault(): array
     {
         return [
@@ -68,4 +92,5 @@ class Lookup
             self::USERS => [],
         ];
     }
+
 }
