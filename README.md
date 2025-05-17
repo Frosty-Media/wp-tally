@@ -13,18 +13,6 @@ WP Tally plugin for counting the number of downloads of a user's WordPress.org p
 
 ## Package Installation (via Composer)
 
-To install this package, edit your `composer.json` file:
-```json
-{
-    "require": {
-        "frosty-media/wp-tally": "^2.6"
-    }
-}
+```bash
+composer require frosty-media/wp-tally
 ```
-Then run:
-
-`$ composer install frosty-media/wp-tally`
-
-Or, run:
-
-`$ composer require frosty-media/wp-tally:^2.`
