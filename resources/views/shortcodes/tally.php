@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use FrostyMedia\WpTally\Stats\Lookup;
 use TheFrosty\WpUtilities\Api\TransientsTrait;
 use function FrostyMedia\WpTally\getRating;
 use function FrostyMedia\WpTally\getTransientName;
