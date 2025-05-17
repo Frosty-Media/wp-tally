@@ -10,6 +10,7 @@ use FrostyMedia\WpTally\Models\Themes\Api as ThemesApi;
 use FrostyMedia\WpTally\Models\Themes\Theme;
 use FrostyMedia\WpTally\ServiceProvider;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use TheFrosty\WpUtilities\Plugin\AbstractContainerProvider;
 use WP_Http;
@@ -25,6 +26,7 @@ use function FrostyMedia\WpTally\sort;
 use function sanitize_user;
 use function session_write_close;
 use function trailingslashit;
+use const FILTER_VALIDATE_BOOLEAN;
 
 /**
  * Class Api.
@@ -32,9 +34,21 @@ use function trailingslashit;
  */
 class Api extends AbstractContainerProvider
 {
+    public const string HOOK_NAME_DISABLE_API = 'frosty_media_wp_tally_disable_api';
+    public const string HOOK_NAME_HTTP_REFERRER = 'frosty_media_wp_tally_http_referrer';
 
     public const string HOOK_NAME_QUERY_VAR = 'frosty_media_wp_tally_query_var';
     private array $data = [];
+
+    /**
+     * Get the HTTP_REFERRER value.
+     * @return string
+     * @uses apply_filters()
+     */
+    public static function getHttpReferrer(): string
+    {
+        return apply_filters(self::HOOK_NAME_HTTP_REFERRER, home_url());
+    }
 
     /**
      * Get the registered "query_var" key.
@@ -98,6 +112,18 @@ class Api extends AbstractContainerProvider
      */
     protected function processQuery(): void
     {
+        /** @var Request $request */
+        $request = $this->getContainer()->get(ServiceProvider::REQUEST);
+        /**
+         * Disable the API if filtered off.
+         * @param bool $disable
+         */
+        if (
+            filter_var(apply_filters(self::HOOK_NAME_DISABLE_API, false), FILTER_VALIDATE_BOOLEAN) &&
+            $request->server->get('HTTP_REFERER') !== self::getHttpReferrer()
+        ) {
+            return;
+        }
         global $wp_query;
         $query_vars = $wp_query->query_vars;
 
