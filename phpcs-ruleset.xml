@@ -41,7 +41,9 @@
 
     <rule ref="WordPress.WP.I18n">
         <properties>
-            <property name="text_domain" type="array" value="wp-tally"/>
+            <property name="text_domain" type="array">
+                <element value="wp-tally"/>
+            </property>
         </properties>
         <exclude name="WordPress.WP.I18n.MissingTranslatorsComment"/>
     </rule>
