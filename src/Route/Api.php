@@ -148,11 +148,6 @@ class Api extends AbstractContainerProvider
             $this->render(WP_Http::NOT_ACCEPTABLE);
         }
 
-        /** @var \FrostyMedia\WpTally\Stats\Lookup $lookup */
-        $lookup = $this->getContainer()->get(ServiceProvider::API);
-        $lookup->updateCount();
-        $lookup->updateUser($username);
-
         if (isset($query_vars['force']) && filter_var($query_vars['force'], FILTER_VALIDATE_BOOLEAN)) {
             delete_transient(getTransientName($username));
             delete_transient(getTransientName($username, 'themes'));
