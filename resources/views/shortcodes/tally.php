@@ -54,10 +54,6 @@ if ($username) {
         return $html;
     };
 
-    /** @var FrostyMedia\WpTally\Stats\Lookup $lookup */
-    $lookup->updateCount();
-    $lookup->updateUser($username, Lookup::VIEW_SHORTCODE);
-
     if ($query->has('force') && filter_var($query->get('force'), FILTER_VALIDATE_BOOLEAN)) {
         delete_transient(getTransientName($username));
         delete_transient(getTransientName($username, 'themes'));
