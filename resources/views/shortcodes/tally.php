@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use FrostyMedia\WpTally\Stats\Lookup;
 use Symfony\Component\HttpFoundation\InputBag;
 use TheFrosty\WpUtilities\Api\TransientsTrait;
 use function FrostyMedia\WpTally\getRating;
@@ -52,9 +53,9 @@ if ($username) {
         return $html;
     };
 
-    $lookup_count = get_option('wptally_lookups');
-    $lookup_count = $lookup_count ? $lookup_count + 1 : 1;
-    update_option('wptally_lookups', $lookup_count);
+    /** @var \FrostyMedia\WpTally\Stats\Lookup $lookup */
+    $lookup->updateCount();
+    $lookup->updateUser($username, Lookup::VIEW_SHORTCODE);
 
     if ($query->has('force') && filter_var($query->get('force'), FILTER_VALIDATE_BOOLEAN)) {
         delete_transient(getTransientName($username));
