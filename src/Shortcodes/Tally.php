@@ -12,10 +12,15 @@ use TheFrosty\WpUtilities\Utils\Viewable;
 use function add_shortcode;
 use function dirname;
 use function filemtime;
+use function plugin_dir_path;
 use function plugins_url;
 use function wp_enqueue_script;
 use function wp_enqueue_style;
 
+/**
+ * Class Tally.
+ * @package FrostyMedia\WpTally\Shortcodes
+ */
 class Tally extends AbstractContainerProvider implements HttpFoundationRequestInterface
 {
 
@@ -29,6 +34,11 @@ class Tally extends AbstractContainerProvider implements HttpFoundationRequestIn
         $this->addAction('init', [$this, 'addShortcode']);
     }
 
+    /**
+     * Register our shortcode and enqueue our scripts and styles.
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     */
     protected function addShortcode(): void
     {
         add_shortcode('tally', function (): string {
@@ -41,7 +51,7 @@ class Tally extends AbstractContainerProvider implements HttpFoundationRequestIn
             wp_enqueue_style(
                 'wp-tally',
                 plugins_url('resources/css/style.css', dirname(__DIR__)),
-                filemtime(\plugin_dir_path(dirname(__DIR__)) . 'resources/css/style.css')
+                filemtime(plugin_dir_path(dirname(__DIR__)) . 'resources/css/style.css')
             );
 
             return $this->getView(ServiceProvider::WP_UTILITIES_VIEW)->retrieve(
