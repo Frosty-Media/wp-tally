@@ -8,17 +8,50 @@ use FrostyMedia\WpTally\Models\Plugins\Api as PluginsApi;
 use FrostyMedia\WpTally\Models\Plugins\Plugin;
 use FrostyMedia\WpTally\Models\Themes\Api as ThemesApi;
 use FrostyMedia\WpTally\Models\Themes\Theme;
+use FrostyMedia\WpTally\Route\Api;
 use WP_Error;
 use function delete_transient;
 use function function_exists;
 use function get_transient;
+use function home_url;
+use function json_decode;
 use function plugins_api;
 use function round;
 use function set_transient;
 use function sprintf;
 use function strcmp;
 use function themes_api;
+use function trailingslashit;
 use function usort;
+use function wp_remote_retrieve_body;
+use function wp_safe_remote_get;
+use const JSON_THROW_ON_ERROR;
+
+/**
+ * Get the Tally API endpoint URL.
+ * @return string
+ */
+function getTallyUrl(): string
+{
+    return trailingslashit(home_url(Api::getQueryVar()));
+}
+
+/**
+ * @param string|null $username
+ * @return object|null
+ * @throws \JsonException
+ */
+function getTally(?string $username = null): ?object
+{
+    $url = sprintf('%s%s', getTallyUrl(), $username);
+    $response = wp_remote_retrieve_body(wp_safe_remote_get($url));
+
+    if ($response === '') {
+        return null;
+    }
+
+    return json_decode($response, false, flags: JSON_THROW_ON_ERROR);
+}
 
 /**
  * Get a transient name key.
