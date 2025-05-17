@@ -37,9 +37,9 @@ $container->register(new ServiceProvider());
 
 $plugin
     ->add(new DisablePluginUpdateCheck())
-    ->addOnHook(Route\Api::class, 'after_setup_theme')
+    ->addOnHook(Route\Api::class, 'after_setup_theme', args: [$container])
     ->addOnHook(Shortcodes\Tally::class, 'after_setup_theme', args: [$container])
-    ->addOnHook(WpAdmin\DashboardWidget::class, 'load-index.php')
+    ->addOnHook(WpAdmin\DashboardWidget::class, 'load-index.php', args: [$container])
     ->initialize();
 
 // Make sure we flush rules for our rewrite endpoint.

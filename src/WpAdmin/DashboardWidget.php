@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace FrostyMedia\WpTally\WpAdmin;
 
-use TheFrosty\WpUtilities\Plugin\HooksTrait;
-use TheFrosty\WpUtilities\Plugin\WpHooksInterface;
+use FrostyMedia\WpTally\ServiceProvider;
+use TheFrosty\WpUtilities\Plugin\AbstractContainerProvider;
 use function _n;
 use function filemtime;
-use function get_option;
 use function number_format_i18n;
 use function plugins_url;
 use function printf;
 use function wp_enqueue_style;
 
-class DashboardWidget implements WpHooksInterface
+/**
+ * Class DashboardWidget.
+ * @package FrostyMedia\WpTally\WpAdmin
+ */
+class DashboardWidget extends AbstractContainerProvider
 {
-
-    use HooksTrait;
-
     /**
      * Add class hooks.
      */
@@ -33,17 +33,17 @@ class DashboardWidget implements WpHooksInterface
      */
     protected function glanceItems(): void
     {
-        $count = get_option('wptally_lookups', 0);
-
-        $count = $count ? number_format_i18n($count) : 0;
-
-        $label = _n('Lookup', 'Lookups', (int)$count, 'wp-tally');
+        /** @var \FrostyMedia\WpTally\Stats\Lookup $lookup */
+        $lookup = $this->getContainer()->get(ServiceProvider::API);
+        $count = number_format_i18n($lookup->getTotalCount());
+        $label = _n('Lookup', 'Lookups', $count, 'wp-tally');
 
         printf('<li class="wptally-count"><span>%d %s</span></li>', $count, $label);
     }
 
     /**
      * Load admin scripts and styles
+     * @param string $hook
      */
     protected function adminEnqueueScripts(string $hook): void
     {

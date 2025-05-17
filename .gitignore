@@ -3,3 +3,4 @@
 /wordpress
 /vendor
 composer.lock
+phpcs-report.xml

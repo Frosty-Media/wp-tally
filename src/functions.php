@@ -20,11 +20,6 @@ use function strcmp;
 use function themes_api;
 use function usort;
 
-// Exit if accessed directly
-if (!defined('ABSPATH')) {
-    exit;
-}
-
 /**
  * Get a transient name key.
  * @param string $username
