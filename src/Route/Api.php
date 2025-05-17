@@ -10,7 +10,6 @@ use FrostyMedia\WpTally\Models\Themes\Api as ThemesApi;
 use FrostyMedia\WpTally\Models\Themes\Theme;
 use FrostyMedia\WpTally\ServiceProvider;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use TheFrosty\WpUtilities\Plugin\AbstractContainerProvider;
 use WP_Http;
@@ -112,7 +111,7 @@ class Api extends AbstractContainerProvider
      */
     protected function processQuery(): void
     {
-        /** @var Request $request */
+        /** @var \Symfony\Component\HttpFoundation\Request $request */
         $request = $this->getContainer()->get(ServiceProvider::REQUEST);
         /**
          * Disable the API if filtered off.
