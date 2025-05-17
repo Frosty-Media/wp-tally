@@ -28,6 +28,7 @@ use function trailingslashit;
 
 /**
  * Class Api.
+ * @package FrostyMedia\WpTally\Route
  */
 class Api extends AbstractContainerProvider
 {
