@@ -13,8 +13,9 @@
   "config": {
     "allow-plugins": {
       "composer/installers": true,
-      "roots/wordpress-core-installer": true,
-      "dealerdirect/phpcodesniffer-composer-installer": true
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "phpstan/extension-installer": true,
+      "roots/wordpress-core-installer": true
     },
     "optimize-autoloader": true,
     "platform": {
@@ -31,8 +32,9 @@
   },
   "require-dev": {
     "dealerdirect/phpcodesniffer-composer-installer": "^1.0.0",
-    "phpcompatibility/php-compatibility": "*",
     "php-stubs/wordpress-stubs": "~6.8",
+    "phpcompatibility/php-compatibility": "*",
+    "phpstan/extension-installer": "^1.4",
     "rector/rector": "^2.0",
     "roave/security-advisories": "dev-latest",
     "roots/wordpress-no-content": "^6.8",
@@ -57,8 +59,19 @@
     "phpcs": [
       "bash ./vendor/thefrosty/wp-utilities/bin/phpcs.sh"
     ],
+    "phpstan": [
+      "bash ./vendor/thefrosty/wp-utilities/bin/phpstan.sh"
+    ],
+    "psalm": [
+      "bash ./vendor/thefrosty/wp-utilities/bin/psalm.sh"
+    ],
     "eslint": [
       "npm run eslint"
+    ],
+    "analyze-all-files": [
+      "./vendor/bin/phpcs --standard=phpcs.ruleset.xml",
+      "./vendor/bin/phpstan analyze src --memory-limit 1G",
+      "./vendor/bin/psalm --config=psalm.xml --show-info=true src"
     ]
   }
 }
