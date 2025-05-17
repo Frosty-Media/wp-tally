@@ -19,6 +19,7 @@ namespace FrostyMedia\WpTally;
 
 defined('ABSPATH') || exit;
 
+use ReflectionMethod;
 use TheFrosty\WpUtilities\Plugin\PluginFactory;
 use TheFrosty\WpUtilities\WpAdmin\DisablePluginUpdateCheck;
 use function defined;
@@ -44,7 +45,7 @@ $plugin
 
 // Make sure we flush rules for our rewrite endpoint.
 register_activation_hook(__FILE__, static function (): void {
-    $method = new \ReflectionMethod(Route\Api::class, 'addRewriteEndpoint');
+    $method = new ReflectionMethod(Route\Api::class, 'addRewriteEndpoint');
     $method->invoke(new Route\Api());
     flush_rewrite_rules();
 });
