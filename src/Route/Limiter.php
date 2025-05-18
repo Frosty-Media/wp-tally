@@ -10,7 +10,6 @@ use WP_Http;
 use function filter_var;
 use function header;
 use function headers_sent;
-use function sprintf;
 use function status_header;
 use function time;
 use function update_option;
