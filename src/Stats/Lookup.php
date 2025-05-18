@@ -20,6 +20,15 @@ class Lookup
     protected const string USERS = 'users';
     protected const string USERS_COUNT = 'count';
     protected const string USERS_VIEW = 'view';
+    protected const string VERSION = 'db_version';
+
+    /**
+     * Lookup constructor.
+     * @param string $file
+     */
+    public function __construct(private readonly string $file)
+    {
+    }
 
     /**
      * Get the option.
@@ -90,6 +99,7 @@ class Lookup
         return [
             self::TOTAL_COUNT => 0,
             self::USERS => [],
+            self::VERSION => get_plugin_data($this->file, translate: false)['Version'],
         ];
     }
 }
