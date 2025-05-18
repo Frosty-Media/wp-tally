@@ -45,11 +45,11 @@ function getTallyUrl(): string
 
 /**
  * Get the tally.
- * @param string|null $username
+ * @param string $username
  * @return object|null
  * @throws \JsonException
  */
-function getTally(?string $username = null): ?object
+function getTally(string $username): ?object
 {
     $url = sprintf('%s%s', getTallyUrl(), $username);
     $response = wp_safe_remote_get(
@@ -87,16 +87,12 @@ function getTransientName(string $username, string $type = 'plugins'): string
 
 /**
  * Get a users plugin data.
- * @param false|string $username The user to check
+ * @param string $username The user to check
  * @param bool $force Forcibly remove any existing cache.
- * @return PluginsApi|WP_Error|false
+ * @return PluginsApi|WP_Error
  */
-function maybeGetPlugins(false|string $username = false, bool $force = false): PluginsApi|WP_Error|false
+function maybeGetPlugins(string $username, bool $force = false): PluginsApi|WP_Error
 {
-    if (!$username) {
-        return false;
-    }
-
     if (!function_exists('plugins_api')) {
         require_once ABSPATH . 'wp-admin/includes/plugin-install.php';
     }
@@ -144,15 +140,12 @@ function maybeGetPlugins(false|string $username = false, bool $force = false): P
 
 /**
  * Get a users theme data.
- * @param false|string $username The user to check
+ * @param string $username The user to check
  * @param bool $force Forcibly remove any existing cache.
- * @return ThemesApi|WP_Error|false
+ * @return ThemesApi|WP_Error
  */
-function maybeGetThemes(false|string $username = false, bool $force = false): ThemesApi|WP_Error|false
+function maybeGetThemes(string $username, bool $force = false): ThemesApi|WP_Error
 {
-    if (!$username) {
-        return false;
-    }
     if (!function_exists('themes_api')) {
         require_once ABSPATH . 'wp-admin/includes/theme.php';
     }
