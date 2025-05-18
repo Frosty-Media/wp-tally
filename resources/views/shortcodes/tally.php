@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use FrostyMedia\WpTally\Stats\Lookup;
 use TheFrosty\WpUtilities\Api\TransientsTrait;
 use function FrostyMedia\WpTally\getRating;
 use function FrostyMedia\WpTally\getTransientName;
@@ -11,31 +12,38 @@ use function FrostyMedia\WpTally\sort;
 
 /** @phpcs:disable Generic.Files.LineLength.TooLong */
 
-/** @var Symfony\Component\HttpFoundation\InputBag $query */
-$query ??= $this->getRequest()->query;
+/** @var Symfony\Component\HttpFoundation\Request $request */
+$request ??= $this->getRequest();
+$post = $request->request;
 $transients = new class {
     use TransientsTrait;
 };
 
-$username = $query->get('wpusername', '');
-$active = $query->has('active') && $query->get('active') === 'themes' ? 'themes' : 'plugins';
-$order_by = $query->has('by') && $query->get('by') === 'downloads' ? 'downloaded' : 'name';
-$sort = $query->has('dir') && $query->get('dir') === 'desc' ? 'desc' : 'asc';
+$username = $post->get('wpusername');
+$active = $post->has('active') && $post->get('active') === 'themes' ? 'themes' : 'plugins';
+$order_by = $post->has('by') && $post->get('by') === 'downloads' ? 'downloaded' : 'name';
+$sort = $post->has('dir') && $post->get('dir') === 'desc' ? 'desc' : 'asc';
 
 $search = <<<'HTML'
     <div class="tally-search-box">
-    <form class="tally-search-form" method="get" action="" autocomplete="off">
-    <input type="text" name="wpusername" class="tally-search-field" placeholder="Enter your WordPress.org username" value="%s" data-1p-ignore>
-    <input type="submit" class="tally-search-submit" value="Search" >
+    <form class="tally-search-form" method="post" action="" autocomplete="off">
+    <input class="tally-search-field" type="text" name="wpusername" placeholder="Enter your WordPress.org username" 
+    value="%1$s" pattern="\w{1,30}" required data-1p-ignore>
+    <input type="submit" class="tally-search-submit" value="Search">
+    %2$s
     </form>
     </div>
     HTML;
 
-printf($search, sanitize_user($username));
+printf(
+    $search,
+    sanitize_user($username),
+    wp_nonce_field('tally-search-form', '_tally_ho')
+);
 
 $results = '<div class="tally-search-results" id="search-results">';
 
-if ($username) {
+if (!empty($username)) {
     // Maybe show cache timeout.
     $cache_results = static function (string $type) use ($transients, $username): string {
         $timeout = $transients->getTransientTimeout(getTransientName($username, $type));
@@ -53,12 +61,21 @@ if ($username) {
         return $html;
     };
 
-    if ($query->has('force') && filter_var($query->get('force'), FILTER_VALIDATE_BOOLEAN)) {
+    if (
+        $request->server->get('REQUEST_METHOD') === 'POST' &&
+        wp_verify_nonce($post->get('_tally_ho'), 'tally-search-form')
+    ) {
+        /** @var Lookup $lookup */
+        $lookup->updateCount();
+        $lookup->updateUser($username, Lookup::VIEW_SHORTCODE);
+    }
+
+    if ($request->query->has('force') && filter_var($request->query->get('force'), FILTER_VALIDATE_BOOLEAN)) {
         delete_transient(getTransientName($username));
         delete_transient(getTransientName($username, 'themes'));
     }
 
-    $plugins = maybeGetPlugins($username, filter_var($query->get('force', false), FILTER_VALIDATE_BOOLEAN));
+    $plugins = maybeGetPlugins($username, filter_var($request->query->get('force', false), FILTER_VALIDATE_BOOLEAN));
 
     $results .= '<div class="tally-search-results-wrapper">';
     $results .= sprintf(
@@ -216,7 +233,7 @@ if ($username) {
     }
     $results .= '</div>';
 
-    $themes = maybeGetThemes($username, filter_var($query->get('force', false), FILTER_VALIDATE_BOOLEAN));
+    $themes = maybeGetThemes($username, filter_var($request->query->get('force', false), FILTER_VALIDATE_BOOLEAN));
 
     $results .= sprintf(
         '<div class="tally-search-results-themes"%s>',
@@ -236,7 +253,7 @@ if ($username) {
         $ratings_total = 0;
 
         if ($count === 0) {
-            $results .= '<div class="tally-search-error">No themes found for ' . $username . '!</div>';
+            $results .= '<div class="tally-search-error">No themes found for ' . $username . '.</div>';
         } else {
             foreach ($themes as $theme) {
                 $rating = getRating($theme);
