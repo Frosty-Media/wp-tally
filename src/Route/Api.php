@@ -33,6 +33,9 @@ use const FILTER_VALIDATE_BOOLEAN;
  */
 class Api extends AbstractContainerProvider
 {
+
+    use Limiter;
+
     public const string HOOK_NAME_DISABLE_API = 'frosty_media_wp_tally_disable_api';
     public const string HOOK_NAME_HTTP_REFERRER = 'frosty_media_wp_tally_http_referrer';
 
@@ -76,7 +79,7 @@ class Api extends AbstractContainerProvider
     public function addHooks(): void
     {
         $this->addAction('init', [$this, 'addRewriteEndpoint']);
-        $this->addAction('template_redirect', [$this, 'processQuery'], -1);
+        $this->addAction('parse_query', [$this, 'processQuery'], -1);
         $this->addFilter('query_vars', [$this, 'queryVars']);
     }
 
@@ -146,6 +149,14 @@ class Api extends AbstractContainerProvider
                 'error' => 'No user found',
             ]);
             $this->render(WP_Http::NOT_ACCEPTABLE);
+        }
+
+        $limit = $this->rateLimiter(5);
+        if (is_wp_error($limit)) {
+            $this->setData([
+                'error' => $limit->get_error_message(),
+            ]);
+            $this->render(WP_Http::TOO_MANY_REQUESTS);
         }
 
         if (isset($query_vars['force']) && filter_var($query_vars['force'], FILTER_VALIDATE_BOOLEAN)) {
