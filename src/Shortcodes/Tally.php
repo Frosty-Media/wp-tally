@@ -56,7 +56,7 @@ class Tally extends AbstractContainerProvider implements HttpFoundationRequestIn
 
             return $this->getView(ServiceProvider::WP_UTILITIES_VIEW)->retrieve(
                 'shortcodes/tally',
-                ['lookup' => $this->getContainer()->get(ServiceProvider::API), 'query' => $this->getRequest()->query]
+                ['lookup' => $this->getContainer()->get(ServiceProvider::API), 'request' => $this->getRequest()]
             );
         });
     }
