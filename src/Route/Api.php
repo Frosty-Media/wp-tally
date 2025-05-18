@@ -172,7 +172,7 @@ class Api extends AbstractContainerProvider
 
         $plugins = maybeGetPlugins($username, isset($force));
 
-        if (!$plugins || is_wp_error($plugins)) {
+        if (is_wp_error($plugins)) {
             $data[PluginsApi::SECTION_PLUGINS] = [
                 'error' => sprintf('An error occurred with the plugins API: %s', $plugins->get_error_message()),
             ];
@@ -212,7 +212,7 @@ class Api extends AbstractContainerProvider
 
         $themes = maybeGetThemes($username, isset($force));
 
-        if (!$themes || is_wp_error($themes)) {
+        if (is_wp_error($themes)) {
             $data[ThemesApi::SECTION_THEMES] = [
                 'error' => sprintf('An error occurred with the themes API: %s', $themes->get_error_message()),
             ];
