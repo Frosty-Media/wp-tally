@@ -248,6 +248,11 @@ class Api extends AbstractContainerProvider
             }
         }
 
+        /** @var \FrostyMedia\WpTally\Stats\Lookup $lookup */
+        $lookup = $this->getContainer()->get(ServiceProvider::API);
+        $lookup->updateCount();
+        $lookup->updateUser($username);
+
         $this->setData($data);
         $this->render();
     }
@@ -274,7 +279,7 @@ class Api extends AbstractContainerProvider
      */
     private function render(int $status_code = Response::HTTP_OK): never
     {
-        (new JsonResponse($this->data, $status_code))->send();
+        (new JsonResponse($this->getData(), $status_code))->send();
         session_write_close();
         exit;
     }
