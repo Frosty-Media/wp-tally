@@ -34,7 +34,7 @@ if (is_readable(__DIR__ . '/vendor/autoload.php')) {
 
 $plugin = PluginFactory::create('wp-tally');
 $container = $plugin->getContainer();
-$container->register(new ServiceProvider());
+$container->register(new ServiceProvider($plugin));
 
 $plugin
     ->add(new DisablePluginUpdateCheck())

@@ -33,6 +33,9 @@ use const FILTER_VALIDATE_BOOLEAN;
  */
 class Api extends AbstractContainerProvider
 {
+
+    use Limiter;
+
     public const string HOOK_NAME_DISABLE_API = 'frosty_media_wp_tally_disable_api';
     public const string HOOK_NAME_HTTP_REFERRER = 'frosty_media_wp_tally_http_referrer';
 
@@ -76,7 +79,7 @@ class Api extends AbstractContainerProvider
     public function addHooks(): void
     {
         $this->addAction('init', [$this, 'addRewriteEndpoint']);
-        $this->addAction('template_redirect', [$this, 'processQuery'], -1);
+        $this->addAction('parse_query', [$this, 'processQuery'], -1);
         $this->addFilter('query_vars', [$this, 'queryVars']);
     }
 
@@ -148,6 +151,14 @@ class Api extends AbstractContainerProvider
             $this->render(WP_Http::NOT_ACCEPTABLE);
         }
 
+        $limit = $this->rateLimiter(5);
+        if (is_wp_error($limit)) {
+            $this->setData([
+                'error' => $limit->get_error_message(),
+            ]);
+            $this->render(WP_Http::TOO_MANY_REQUESTS);
+        }
+
         if (isset($query_vars['force']) && filter_var($query_vars['force'], FILTER_VALIDATE_BOOLEAN)) {
             delete_transient(getTransientName($username));
             delete_transient(getTransientName($username, 'themes'));
@@ -172,7 +183,7 @@ class Api extends AbstractContainerProvider
 
         $plugins = maybeGetPlugins($username, isset($force));
 
-        if (!$plugins || is_wp_error($plugins)) {
+        if (is_wp_error($plugins)) {
             $data[PluginsApi::SECTION_PLUGINS] = [
                 'error' => sprintf('An error occurred with the plugins API: %s', $plugins->get_error_message()),
             ];
@@ -212,7 +223,7 @@ class Api extends AbstractContainerProvider
 
         $themes = maybeGetThemes($username, isset($force));
 
-        if (!$themes || is_wp_error($themes)) {
+        if (is_wp_error($themes)) {
             $data[ThemesApi::SECTION_THEMES] = [
                 'error' => sprintf('An error occurred with the themes API: %s', $themes->get_error_message()),
             ];
@@ -248,6 +259,11 @@ class Api extends AbstractContainerProvider
             }
         }
 
+        /** @var \FrostyMedia\WpTally\Stats\Lookup $lookup */
+        $lookup = $this->getContainer()->get(ServiceProvider::API);
+        $lookup->updateCount();
+        $lookup->updateUser($username);
+
         $this->setData($data);
         $this->render();
     }
@@ -274,7 +290,7 @@ class Api extends AbstractContainerProvider
      */
     private function render(int $status_code = Response::HTTP_OK): never
     {
-        (new JsonResponse($this->data, $status_code))->send();
+        (new JsonResponse($this->getData(), $status_code))->send();
         session_write_close();
         exit;
     }

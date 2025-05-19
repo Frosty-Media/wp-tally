@@ -8,6 +8,7 @@ use FrostyMedia\WpTally\Stats\Lookup;
 use Pimple\Container as PimpleContainer;
 use Pimple\ServiceProviderInterface;
 use Symfony\Component\HttpFoundation\Request;
+use TheFrosty\WpUtilities\Plugin\PluginInterface;
 use TheFrosty\WpUtilities\Utils\View;
 use function dirname;
 
@@ -23,12 +24,20 @@ class ServiceProvider implements ServiceProviderInterface
     public const string WP_UTILITIES_VIEW = 'wp_utilities.view';
 
     /**
+     * ServiceProvider constructor.
+     * @param PluginInterface $plugin
+     */
+    public function __construct(private readonly PluginInterface $plugin)
+    {
+    }
+
+    /**
      * Register services.
      * @param PimpleContainer $pimple Container instance.
      */
     public function register(PimpleContainer $pimple): void
     {
-        $pimple[self::API] = static fn(): Lookup => new Lookup();
+        $pimple[self::API] = fn(): Lookup => new Lookup($this->plugin->getFile());
 
         $pimple[self::REQUEST] = static fn(): Request => Request::createFromGlobals();
 
