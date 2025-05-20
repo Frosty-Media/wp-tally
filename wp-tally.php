@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: WP Tally
- * Plugin URI: https://wptally.com
+ * Plugin URI: https://github.com/Frosty-Media/wp-tally
  * Description: Track your total WordPress plugin and theme downloads.
  * Version: 2.1.1
  * Author: Austin Passy
