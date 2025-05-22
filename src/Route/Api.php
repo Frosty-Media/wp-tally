@@ -9,6 +9,7 @@ use FrostyMedia\WpTally\Models\Plugins\Plugin;
 use FrostyMedia\WpTally\Models\Themes\Api as ThemesApi;
 use FrostyMedia\WpTally\Models\Themes\Theme;
 use FrostyMedia\WpTally\ServiceProvider;
+use FrostyMedia\WpTally\Stats\Lookup;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use TheFrosty\WpUtilities\Plugin\AbstractContainerProvider;
@@ -259,10 +260,8 @@ class Api extends AbstractContainerProvider
             }
         }
 
-        /** @var \FrostyMedia\WpTally\Stats\Lookup $lookup */
-        $lookup = $this->getContainer()->get(ServiceProvider::API);
-        $lookup->updateCount();
-        $lookup->updateUser($username);
+        Lookup::updateCount();
+        Lookup::updateUser($username);
 
         $this->setData($data);
         $this->render();
