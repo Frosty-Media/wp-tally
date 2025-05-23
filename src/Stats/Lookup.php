@@ -29,11 +29,11 @@ class Lookup extends AbstractSingletonProvider
     public const string OPTION = '_wptally_stats';
     public const string VIEW_API = 'api';
     public const string VIEW_SHORTCODE = 'shortcode';
+    public const string TOTAL_COUNT = 'total_count';
+    public const string USERS = 'users';
+    public const string USERS_COUNT = 'count';
+    public const string USERS_VIEW = 'view';
     protected const string ACTION = 'wptally_upgrade';
-    protected const string TOTAL_COUNT = 'total_count';
-    protected const string USERS = 'users';
-    protected const string USERS_COUNT = 'count';
-    protected const string USERS_VIEW = 'view';
     protected const string VERSION = 'db_version';
 
     /**
