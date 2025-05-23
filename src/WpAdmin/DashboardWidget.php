@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace FrostyMedia\WpTally\WpAdmin;
 
-use FrostyMedia\WpTally\ServiceProvider;
 use FrostyMedia\WpTally\Stats\Lookup;
 use TheFrosty\WpUtilities\Plugin\AbstractContainerProvider;
 use function _n;
