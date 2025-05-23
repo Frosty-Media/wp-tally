@@ -38,7 +38,7 @@ $search = <<<'HTML'
 printf(
     $search,
     sanitize_user($username),
-    wp_nonce_field('tally-search-form', '_tally_ho')
+    wp_nonce_field('tally-search-form', '_tally_ho', display: false)
 );
 
 $results = '<div class="tally-search-results" id="search-results">';
