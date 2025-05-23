@@ -38,8 +38,12 @@ class DashboardWidget extends AbstractContainerProvider
         $count = number_format_i18n(Lookup::getTotalCount());
         $label = _n('Lookup', 'Lookups', $count, 'wp-tally');
 
+        if ($count === '0') {
+            printf('<li class="wptally-count"><span>%1$d %2$s</span></li>', $count, $label);
+            return;
+        }
         printf(
-            '<li class="wptally-count"><a href="%3$s">%1$d %2$s</a></span></li>',
+            '<li class="wptally-count"><a href="%3$s">%1$d %2$s</a></li>',
             $count,
             $label,
             esc_url(admin_url('index.php?page=tally-stats'))

@@ -20,7 +20,7 @@ class StatsPage extends AbstractContainerProvider
 {
     use Viewable;
 
-    protected false|string $hook;
+    protected false|string $hook = false;
 
     /**
      * Add class hooks.
@@ -36,6 +36,9 @@ class StatsPage extends AbstractContainerProvider
      */
     protected function addDashboardPage(): void
     {
+        if (Lookup::getTotalCount() === 0) {
+            return;
+        }
         $this->hook = add_dashboard_page(
             'WP Tally Stats',
             'Tally Stats',
