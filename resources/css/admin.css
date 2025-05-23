@@ -1,4 +1,5 @@
-#dashboard_right_now .wptally-count a::before {
+#dashboard_right_now .wptally-count span::before,
+#dashboard_right_now .wptally-count a::before{
     font-family: "dashicons";
     content: "\f185";
 }
