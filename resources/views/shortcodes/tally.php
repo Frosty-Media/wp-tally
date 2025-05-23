@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use FrostyMedia\WpTally\Stats\Lookup;
+use FrostyMedia\WpTally\Stats\View;
 use Symfony\Component\HttpFoundation\Request;
 use TheFrosty\WpUtilities\Api\TransientsTrait;
 use function FrostyMedia\WpTally\getRating;
@@ -66,7 +67,7 @@ if (!empty($username)) {
         wp_verify_nonce($post->get('_tally_ho'), 'tally-search-form')
     ) {
         Lookup::updateCount();
-        Lookup::updateUser($username, Lookup::VIEW_SHORTCODE);
+        Lookup::updateUser($username, View::SHORTCODE);
     }
 
     if ($request->query->has('force') && filter_var($request->query->get('force'), FILTER_VALIDATE_BOOLEAN)) {
