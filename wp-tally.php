@@ -34,12 +34,13 @@ if (is_readable(__DIR__ . '/vendor/autoload.php')) {
 
 $plugin = PluginFactory::create('wp-tally');
 $container = $plugin->getContainer();
-$container->register(new ServiceProvider($plugin));
+$container->register(new ServiceProvider());
 
 $plugin
     ->add(new DisablePluginUpdateCheck())
     ->addOnHook(Route\Api::class, 'after_setup_theme', args: [$container])
     ->addOnHook(Shortcodes\Tally::class, 'after_setup_theme', args: [$container])
+    ->addOnHook(Stats\Lookup::class, 'init')
     ->addOnHook(WpAdmin\DashboardWidget::class, 'load-index.php', args: [$container])
     ->initialize();
 

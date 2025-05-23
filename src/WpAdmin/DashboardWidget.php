@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace FrostyMedia\WpTally\WpAdmin;
 
-use FrostyMedia\WpTally\ServiceProvider;
+use FrostyMedia\WpTally\Stats\Lookup;
 use TheFrosty\WpUtilities\Plugin\AbstractContainerProvider;
 use function _n;
 use function filemtime;
@@ -33,9 +33,7 @@ class DashboardWidget extends AbstractContainerProvider
      */
     protected function glanceItems(): void
     {
-        /** @var \FrostyMedia\WpTally\Stats\Lookup $lookup */
-        $lookup = $this->getContainer()->get(ServiceProvider::API);
-        $count = number_format_i18n($lookup->getTotalCount());
+        $count = number_format_i18n(Lookup::getTotalCount());
         $label = _n('Lookup', 'Lookups', $count, 'wp-tally');
 
         printf('<li class="wptally-count"><span>%d %s</span></li>', $count, $label);

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use FrostyMedia\WpTally\Stats\Lookup;
+use Symfony\Component\HttpFoundation\Request;
 use TheFrosty\WpUtilities\Api\TransientsTrait;
 use function FrostyMedia\WpTally\getRating;
 use function FrostyMedia\WpTally\getTransientName;
@@ -12,8 +13,7 @@ use function FrostyMedia\WpTally\sort;
 
 /** @phpcs:disable Generic.Files.LineLength.TooLong */
 
-/** @var Symfony\Component\HttpFoundation\Request $request */
-$request ??= $this->getRequest();
+$request ??= Request::createFromGlobals();
 $post = $request->request;
 $transients = new class {
     use TransientsTrait;
@@ -65,9 +65,8 @@ if (!empty($username)) {
         $request->server->get('REQUEST_METHOD') === 'POST' &&
         wp_verify_nonce($post->get('_tally_ho'), 'tally-search-form')
     ) {
-        /** @var Lookup $lookup */
-        $lookup->updateCount();
-        $lookup->updateUser($username, Lookup::VIEW_SHORTCODE);
+        Lookup::updateCount();
+        Lookup::updateUser($username, Lookup::VIEW_SHORTCODE);
     }
 
     if ($request->query->has('force') && filter_var($request->query->get('force'), FILTER_VALIDATE_BOOLEAN)) {
