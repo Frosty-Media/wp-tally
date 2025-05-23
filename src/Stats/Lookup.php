@@ -9,6 +9,7 @@ use TheFrosty\WpUtilities\Plugin\AbstractSingletonProvider;
 use function admin_url;
 use function filter_var;
 use function get_plugin_data;
+use function in_array;
 use function sanitize_text_field;
 use function sprintf;
 use function update_option;
@@ -107,9 +108,9 @@ class Lookup extends AbstractSingletonProvider
     protected function adminNotice(): void
     {
         $option = self::getOption();
-        $current_version = get_plugin_data($this->getPlugin()->getFile(), translate: false)['Version'];
         $db_version = $option[self::VERSION] ?? null;
-        if ($db_version === null || $db_version < $current_version) {
+        $upgrades = ['2.1.1'];
+        if ($db_version === null || in_array($db_version, $upgrades, true)) {
             $message = sprintf(
                 'WP Tally requires an update. Please <a href="%s">click here</a>.',
                 esc_url(add_query_arg('action', self::ACTION, admin_url('admin-post.php')))
@@ -134,7 +135,7 @@ class Lookup extends AbstractSingletonProvider
             $this->upgradeOption();
         }
         // Version 2.2.0 (DB options structure change).
-        if ($db_version < '2.1.1') {
+        if ($db_version <= '2.1.1') {
             $users = $option[self::USERS] ?? [];
             $_users = [];
             foreach ($users as $username => $data) {
