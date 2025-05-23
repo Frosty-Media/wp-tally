@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace FrostyMedia\WpTally\Stats;
 
 use Symfony\Component\HttpFoundation\Request;
-use TheFrosty\WpUtilities\Plugin\AbstractSingletonProvider;
 use function filter_var;
 use function get_plugin_data;
 use function sanitize_text_field;
@@ -13,12 +12,13 @@ use function update_option;
 use const FILTER_FLAG_IPV4;
 use const FILTER_FLAG_IPV6;
 use const FILTER_VALIDATE_IP;
+use const FrostyMedia\WpTally\PLUGIN_FILE;
 
 /**
  * Class Lookup
  * @package FrostyMedia\WpTally\Stats
  */
-class Lookup extends AbstractSingletonProvider
+class Lookup
 {
     public const string OPTION = '_wptally_stats';
     public const string TOTAL_COUNT = 'total_count';
@@ -26,13 +26,6 @@ class Lookup extends AbstractSingletonProvider
     public const string USERS_VIEW = 'view';
     protected const string ACTION = 'wptally_upgrade';
     protected const string VERSION = 'db_version';
-
-    /**
-     * Add class hooks.
-     */
-    public function addHooks(): void
-    {
-    }
 
     /**
      * Get the option.
@@ -143,7 +136,7 @@ class Lookup extends AbstractSingletonProvider
         return [
             self::TOTAL_COUNT => 0,
             self::USERS => [],
-            self::VERSION => get_plugin_data(self::getInstance()->getPlugin()->getFile(), translate: false)['Version'],
+            self::VERSION => get_plugin_data(PLUGIN_FILE, translate: false)['Version'],
         ];
     }
 }
