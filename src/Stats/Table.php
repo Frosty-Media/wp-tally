@@ -79,7 +79,10 @@ class Table extends WP_List_Table
      */
     public function get_sortable_columns(): array
     {
-        return ['username' => ['username', false]];
+        return [
+            'username' => ['username', false],
+            'total_count' => ['total_count', false],
+        ];
     }
 
     /**
@@ -133,7 +136,7 @@ class Table extends WP_List_Table
         $orderby = $request->query->get('orderby', 'username');
         $order = strtolower($request->query->get('order', 'asc'));
 
-        $result = strcmp($a[$orderby], $b[$orderby]);
+        $result = strcmp((string)$a[$orderby], (string)$b[$orderby]);
 
         return $order === 'asc' ? $result : -$result;
     }
