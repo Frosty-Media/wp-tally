@@ -7,6 +7,8 @@ namespace FrostyMedia\WpTally\WpAdmin;
 use FrostyMedia\WpTally\Stats\Lookup;
 use TheFrosty\WpUtilities\Plugin\AbstractContainerProvider;
 use function _n;
+use function admin_url;
+use function esc_url;
 use function filemtime;
 use function number_format_i18n;
 use function plugins_url;
@@ -36,7 +38,12 @@ class DashboardWidget extends AbstractContainerProvider
         $count = number_format_i18n(Lookup::getTotalCount());
         $label = _n('Lookup', 'Lookups', $count, 'wp-tally');
 
-        printf('<li class="wptally-count"><span>%d %s</span></li>', $count, $label);
+        printf(
+            '<li class="wptally-count"><a href="%3$s">%1$d %2$s</a></span></li>',
+            $count,
+            $label,
+            esc_url(admin_url('index.php?page=tally-stats'))
+        );
     }
 
     /**
