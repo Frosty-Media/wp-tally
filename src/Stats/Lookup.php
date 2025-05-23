@@ -4,17 +4,24 @@ declare(strict_types=1);
 
 namespace FrostyMedia\WpTally\Stats;
 
+use Symfony\Component\HttpFoundation\Request;
+use TheFrosty\WpUtilities\Plugin\AbstractSingletonProvider;
+use function filter_var;
+use function get_plugin_data;
+use function sanitize_text_field;
 use function update_option;
+use const FILTER_FLAG_IPV4;
+use const FILTER_FLAG_IPV6;
+use const FILTER_VALIDATE_IP;
 
 /**
  * Class Lookup
  * @package FrostyMedia\WpTally\Stats
  */
-class Lookup
+class Lookup extends AbstractSingletonProvider
 {
     public const string OPTION = '_wptally_stats';
     public const string VIEW_API = 'api';
-    public const string VIEW_BLOCK = 'block';
     public const string VIEW_SHORTCODE = 'shortcode';
     protected const string TOTAL_COUNT = 'total_count';
     protected const string USERS = 'users';
@@ -23,69 +30,142 @@ class Lookup
     protected const string VERSION = 'db_version';
 
     /**
-     * Lookup constructor.
-     * @param string $file
+     * Add class hooks.
      */
-    public function __construct(private readonly string $file)
+    public function addHooks(): void
     {
+        $this->addAction('load-index.php', [$this, 'maybeUpgradeOption']);
     }
 
     /**
      * Get the option.
      * @return array
      */
-    public function getOption(): array
+    public static function getOption(): array
     {
-        return get_option(self::OPTION, $this->getDefault());
+        return get_option(self::OPTION, self::getDefault());
     }
 
     /**
      * Get the total count.
      * @return int
      */
-    public function getTotalCount(): int
+    public static function getTotalCount(): int
     {
-        return absint($this->getOption()[self::TOTAL_COUNT]);
+        return absint(self::getOption()[self::TOTAL_COUNT]);
     }
 
     /**
      * Update the total count.
      */
-    public function updateCount(): void
+    public static function updateCount(): void
     {
-        $option = $this->getOption();
+        $option = self::getOption();
         $option[self::TOTAL_COUNT]++;
-        $this->updateOption($option);
+        self::updateOption($option);
     }
 
     /**
      * Update the current users count.
-     * @param string $username
-     * @param string $view
+     * @param string $username The requested .org user
+     * @param string $view The view type
      */
-    public function updateUser(string $username, string $view = self::VIEW_API): void
+    public static function updateUser(string $username, string $view = self::VIEW_API): void
     {
-        $option = $this->getOption();
-        if (!isset($option[self::USERS][$username][self::USERS_COUNT])) {
-            $option[self::USERS][$username][self::USERS_COUNT] = 0;
+        $option = self::getOption();
+        // Set up the current requested user total count.
+        if (!isset($option[self::USERS][$username][self::TOTAL_COUNT])) {
+            $option[self::USERS][$username][self::TOTAL_COUNT] = 0;
         }
+        // Set up the current requested user view count stat.
         if (!isset($option[self::USERS][$username][self::USERS_VIEW])) {
             $option[self::USERS][$username][self::USERS_VIEW] = [
-                self::VIEW_API => 0,
-                self::VIEW_BLOCK => 0,
-                self::VIEW_SHORTCODE => 0,
+                self::VIEW_API => [],
+                self::VIEW_SHORTCODE => [],
             ];
         }
-        $option[self::USERS][$username][self::USERS_COUNT]++;
-        $option[self::USERS][$username][self::USERS_VIEW][$view]++;
-        $this->updateOption($option);
+        // Increment the total count of the requested user.
+        $option[self::USERS][$username][self::TOTAL_COUNT]++;
+        $ip = self::getIpAddress();
+        // Increment the count by client (IP) of the requested user for the view type.
+        $count = $option[self::USERS][$username][self::USERS_VIEW][$view][$ip] ?? 0;
+        $option[self::USERS][$username][self::USERS_VIEW][$view][$ip] = ++$count;
+        self::updateOption($option);
+    }
+
+    /**
+     * Maybe trigger an option upgrade.
+     */
+    protected function maybeUpgradeOption(): void
+    {
+        $option = self::getOption();
+        $current_version = get_plugin_data($this->getPlugin()->getFile(), translate: false)['Version'];
+        $db_version = $option[self::VERSION] ?? null;
+        $ip = self::getIpAddress();
+        // Version 2.1.0 (Added db_version to options).
+        if ($db_version === null) {
+            $option[self::VERSION] = '2.0.0';
+            self::updateOption($option);
+            $this->maybeUpgradeOption();
+        }
+        // Version 2.2.0 (DB options structure change).
+        if ($db_version < '2.1.1') {
+            $users = $option[self::USERS];
+            $_users = [];
+            foreach ($users as $username => $data) {
+                $_users[$username][self::TOTAL_COUNT] = $data[self::USERS_COUNT];
+                if (isset($data[self::USERS_VIEW])) {
+                    foreach ($data[self::USERS_VIEW] as $view => $count) {
+                        $_users[$username][self::USERS_VIEW][$view][$ip] = $count;
+                    }
+                }
+            }
+            $option[self::USERS] = $_users;
+            $option[self::VERSION] = $current_version;
+            self::updateOption($option);
+        }
+    }
+
+    /**
+     * Retrieve the current client's IP address.
+     * @return string
+     */
+    private static function getIpAddress(): string
+    {
+        $request = Request::createFromGlobals();
+
+        $ip = $request->server->get(
+            'HTTP_CLIENT_IP',
+            $request->server->get(
+                'HTTP_CF_CONNECTING_IP',
+                $request->server->get(
+                    'HTTP_X_FORWARDED',
+                    $request->server->get(
+                        'HTTP_X_FORWARDED_FOR',
+                        $request->server->get(
+                            'HTTP_FORWARDED',
+                            $request->server->get(
+                                'HTTP_FORWARDED_FOR',
+                                $request->server->get('REMOTE_ADDR')
+                            )
+                        )
+                    )
+                )
+            )
+        );
+
+        if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6)) {
+            return 'Unknown';
+        }
+
+        return sanitize_text_field($ip);
     }
 
     /**
      * Update the option.
      * @param array $option
      */
-    private function updateOption(array $option): void
+    private static function updateOption(array $option): void
     {
         update_option(self::OPTION, $option);
     }
@@ -94,12 +174,12 @@ class Lookup
      * The default option array model.
      * @return array
      */
-    private function getDefault(): array
+    private static function getDefault(): array
     {
         return [
             self::TOTAL_COUNT => 0,
             self::USERS => [],
-            self::VERSION => get_plugin_data($this->file, translate: false)['Version'],
+            self::VERSION => get_plugin_data(self::getInstance()->getPlugin()->getFile(), translate: false)['Version'],
         ];
     }
 }
