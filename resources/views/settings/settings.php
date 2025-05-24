@@ -21,6 +21,7 @@ $table->display();
         <th>View Type</th>
         <th>IP Address</th>
         <th>Count</th>
+        <th>Clear</th>
     </tr>
     </thead>
     <tbody></tbody>
@@ -56,6 +57,8 @@ $table->display();
   const data = <?php echo json_encode($data, JSON_THROW_ON_ERROR) ?>
 
   const tbody = document.querySelector('#activityTable tbody')
+  const url = window.location.href
+  const nonce = '<?php echo wp_create_nonce('_wp_tally_nonce'); ?>'
 
   const usernames = []
   const viewTypes = new Set()
@@ -81,6 +84,7 @@ $table->display();
         <td>${viewType}</td>
         <td>${ip}</td>
         <td>${count}</td>
+        <td><a href="${url}&_wpnonce=${nonce}&_wp_tally_clear_user=1&username=${username}&ip=${ip}&view=${viewType}">Clear ${ip} stats</a></td>
       </tr>`
         tbody.insertAdjacentHTML('beforeend', row)
 
