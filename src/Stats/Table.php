@@ -11,6 +11,7 @@ use function array_slice;
 use function strcmp;
 use function strtolower;
 use function usort;
+use function wp_nonce_url;
 
 /**
  * Class Table
@@ -70,6 +71,7 @@ class Table extends WP_List_Table
             'total_count' => __('Total Count', 'wp-tally'),
             'api' => __('API Views', 'wp-tally'),
             'shortcode' => __('Shortcode Views', 'wp-tally'),
+            'clear' => __('Clear', 'wp-tally'),
         ];
     }
 
@@ -94,7 +96,7 @@ class Table extends WP_List_Table
     public function column_default($item, $column_name): mixed
     {
         return match ($column_name) {
-            'username', 'total_count', 'api', 'shortcode' => $item[$column_name],
+            'username', 'total_count', 'api', 'shortcode', 'clear' => $item[$column_name],
             default => '',
         };
     }
@@ -113,6 +115,11 @@ class Table extends WP_List_Table
                 'total_count' => $stats[Lookup::TOTAL_COUNT] ?? 0,
                 'api' => 0,
                 'shortcode' => 0,
+                'clear' => sprintf(
+                    '<a href="%1$s&_wp_tally_clear=1&username=%2$s">Clear %2$s stats</a>',
+                    wp_nonce_url(add_query_arg('', ''), '_wp_tally_nonce'),
+                    $user,
+                ),
             ];
             foreach ($stats[Lookup::USERS_VIEW] as $view => $views) {
                 foreach ($views as $count) {

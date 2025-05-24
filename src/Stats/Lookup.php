@@ -82,7 +82,7 @@ class Lookup
      * Update the option.
      * @param array $option
      */
-    private static function updateOption(array $option): void
+    public static function updateOption(array $option): void
     {
         update_option(self::OPTION, $option);
     }
