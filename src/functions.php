@@ -17,6 +17,7 @@ use function esc_url_raw;
 use function filter_var;
 use function function_exists;
 use function get_transient;
+use function hash;
 use function home_url;
 use function is_wp_error;
 use function json_decode;
@@ -99,7 +100,8 @@ function getTally(string $username): ?object
         [
             'headers' => [
                 'Accept' => 'application/json',
-                'referer' => Api::getHttpReferrer(),
+                'Referer' => Api::getHttpReferrer(),
+                'X-Client-IP' => getIpAddress(),
             ],
         ]
     );
@@ -114,6 +116,31 @@ function getTally(string $username): ?object
 
     $tally = json_decode(wp_remote_retrieve_body($response), false, flags: JSON_THROW_ON_ERROR);
     return json_last_error() === JSON_ERROR_NONE ? $tally : null;
+}
+
+/**
+ * Get the tally, and cache the results.
+ * @param string $username
+ * @param string|null $transient_key
+ * @param int|null $expiration
+ * @return object|null
+ * @throws \JsonException
+ */
+function getTallyCached(string $username, ?string $transient_key = null, ?int $expiration = null): ?object
+{
+    $url = sprintf('%s%s', getTallyUrl(), $username);
+    $transient_key ??= sprintf('%s_%s', __FUNCTION__, hash('sha256', $url));
+    $expiration ??= WEEK_IN_SECONDS;
+
+    $response = get_transient($transient_key);
+    if ($response === false) {
+        $response = getTally($username);
+        if ($response) {
+            set_transient($transient_key, $response, $expiration);
+        }
+    }
+
+    return $response;
 }
 
 /**
