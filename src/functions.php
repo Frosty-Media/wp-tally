@@ -35,7 +35,6 @@ use function wp_remote_retrieve_body;
 use function wp_remote_retrieve_header;
 use function wp_remote_retrieve_response_code;
 use function wp_safe_remote_get;
-use const __FUNCTION__;
 use const FILTER_FLAG_IPV4;
 use const FILTER_FLAG_IPV6;
 use const FILTER_VALIDATE_IP;
