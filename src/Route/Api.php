@@ -18,6 +18,7 @@ use function add_rewrite_endpoint;
 use function apply_filters;
 use function delete_transient;
 use function filter_var;
+use function FrostyMedia\WpTally\getIpAddress;
 use function FrostyMedia\WpTally\getRating;
 use function FrostyMedia\WpTally\getTransientName;
 use function FrostyMedia\WpTally\maybeGetPlugins;
@@ -152,12 +153,15 @@ class Api extends AbstractContainerProvider
             $this->render(WP_Http::NOT_ACCEPTABLE);
         }
 
-        $limit = $this->rateLimiter(5);
-        if (is_wp_error($limit)) {
-            $this->setData([
-                'error' => $limit->get_error_message(),
-            ]);
-            $this->render(WP_Http::TOO_MANY_REQUESTS);
+        $ip = getIpAddress($request);
+        if (apply_filters('frosty_media_wp_tally_api_use_rate_limiter', true, $ip) === true) {
+            $limit = $this->rateLimiter(limit: 5, ip: $ip);
+            if (is_wp_error($limit)) {
+                $this->setData([
+                    'error' => $limit->get_error_message(),
+                ]);
+                $this->render(WP_Http::TOO_MANY_REQUESTS);
+            }
         }
 
         if (isset($query_vars['force']) && filter_var($query_vars['force'], FILTER_VALIDATE_BOOLEAN)) {
