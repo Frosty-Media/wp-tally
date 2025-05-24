@@ -31,9 +31,10 @@ trait Limiter
      * If more than 100 requests are made within 60 seconds, a limit will be applied.
      * @param int $limit Number of requests
      * @param int $period Time in seconds
+     * @param string|null $ip
      * @return WP_Error|int
      */
-    public function rateLimiter(int $limit = 100, int $period = 60): WP_Error|int
+    public function rateLimiter(int $limit = 100, int $period = 60, ?string $ip = null): WP_Error|int
     {
         $limit = (int)apply_filters('frosty_media_wp_tally_rate_limit_limit', $limit, static::class);
         $period = (int)apply_filters('frosty_media_wp_tally_rate_limit_period', $period, static::class);
@@ -41,7 +42,7 @@ trait Limiter
         $error = new WP_Error();
 
         // Get the IP address of the client, handling proxy headers if present.
-        $ip = getIpAddress();
+        $ip ??= getIpAddress();
 
         // Ensure the IP address is a valid IPv4 or IPv6 address.
         if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6)) {
