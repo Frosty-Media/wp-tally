@@ -6,7 +6,6 @@ declare(strict_types=1);
 namespace FrostyMedia\WpTally\Stats;
 
 use FrostyMedia\WpTally\ServiceProvider;
-use Symfony\Component\HttpFoundation\Request;
 use TheFrosty\WpUtilities\Plugin\AbstractContainerProvider;
 use TheFrosty\WpUtilities\Utils\Viewable;
 use function add_dashboard_page;
@@ -75,7 +74,7 @@ class StatsPage extends AbstractContainerProvider
      */
     private function maybeClearStats(): void
     {
-        /** @var Request $request */
+        /** @var \Symfony\Component\HttpFoundation\Request $request */
         $request = $this->getContainer()->get(ServiceProvider::REQUEST);
         if (
             !$request->query->has('_wpnonce') ||
