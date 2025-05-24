@@ -6,8 +6,10 @@ namespace FrostyMedia\WpTally\Route;
 
 use WP_Error;
 use WP_Http;
+use function apply_filters;
 use function filter_var;
 use function FrostyMedia\WpTally\getIpAddress;
+use function get_called_class;
 use function header;
 use function headers_sent;
 use function status_header;
@@ -33,6 +35,8 @@ trait Limiter
      */
     public function rateLimiter(int $limit = 100, int $period = 60): WP_Error|int
     {
+        $limit = (int)apply_filters('frosty_media_wp_tally_rate_limit_limit', $limit, static::class);
+        $period = (int)apply_filters('frosty_media_wp_tally_rate_limit_period', $period, static::class);
         $data = get_option('_tally_rate_limit', []);
         $error = new WP_Error();
 
