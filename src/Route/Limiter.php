@@ -9,7 +9,6 @@ use WP_Http;
 use function apply_filters;
 use function filter_var;
 use function FrostyMedia\WpTally\getIpAddress;
-use function get_called_class;
 use function header;
 use function headers_sent;
 use function status_header;
