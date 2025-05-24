@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace FrostyMedia\WpTally\Route;
 
-use Symfony\Component\HttpFoundation\Request;
 use WP_Error;
 use WP_Http;
 use function filter_var;
