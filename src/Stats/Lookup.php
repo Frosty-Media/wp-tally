@@ -4,14 +4,9 @@ declare(strict_types=1);
 
 namespace FrostyMedia\WpTally\Stats;
 
-use Symfony\Component\HttpFoundation\Request;
-use function filter_var;
+use function FrostyMedia\WpTally\getIpAddress;
 use function get_plugin_data;
-use function sanitize_text_field;
 use function update_option;
-use const FILTER_FLAG_IPV4;
-use const FILTER_FLAG_IPV6;
-use const FILTER_VALIDATE_IP;
 use const FrostyMedia\WpTally\PLUGIN_FILE;
 
 /**
@@ -76,46 +71,11 @@ class Lookup
         }
         // Increment the total count of the requested user.
         $option[self::USERS][$username][self::TOTAL_COUNT]++;
-        $ip = self::getIpAddress();
+        $ip = getIpAddress();
         // Increment the count by client (IP) of the requested user for the view type.
         $count = $option[self::USERS][$username][self::USERS_VIEW][$view->value][$ip] ?? 0;
         $option[self::USERS][$username][self::USERS_VIEW][$view->value][$ip] = ++$count;
         self::updateOption($option);
-    }
-
-    /**
-     * Retrieve the current client's IP address.
-     * @return string
-     */
-    private static function getIpAddress(): string
-    {
-        $request = Request::createFromGlobals();
-
-        $ip = $request->server->get(
-            'HTTP_CLIENT_IP',
-            $request->server->get(
-                'HTTP_CF_CONNECTING_IP',
-                $request->server->get(
-                    'HTTP_X_FORWARDED',
-                    $request->server->get(
-                        'HTTP_X_FORWARDED_FOR',
-                        $request->server->get(
-                            'HTTP_FORWARDED',
-                            $request->server->get(
-                                'HTTP_FORWARDED_FOR',
-                                $request->server->get('REMOTE_ADDR')
-                            )
-                        )
-                    )
-                )
-            )
-        );
-
-        if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6)) {
-            return 'Unknown';
-        }
-
-        return sanitize_text_field($ip);
     }
 
     /**

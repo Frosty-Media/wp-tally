@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace FrostyMedia\WpTally\Route;
 
-use Symfony\Component\HttpFoundation\Request;
 use WP_Error;
 use WP_Http;
 use function filter_var;
+use function FrostyMedia\WpTally\getIpAddress;
 use function header;
 use function headers_sent;
 use function status_header;
@@ -33,15 +33,11 @@ trait Limiter
      */
     public function rateLimiter(int $limit = 100, int $period = 60): WP_Error|int
     {
-        $request ??= Request::createFromGlobals();
         $data = get_option('_tally_rate_limit', []);
         $error = new WP_Error();
 
         // Get the IP address of the client, handling proxy headers if present.
-        $ip = $request->server->get('REMOTE_ADDR');
-        if ($request->server->has('HTTP_X_FORWARDED_FOR')) {
-            $ip = $request->server->get('HTTP_X_FORWARDED_FOR');
-        }
+        $ip = getIpAddress();
 
         // Ensure the IP address is a valid IPv4 or IPv6 address.
         if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6)) {
