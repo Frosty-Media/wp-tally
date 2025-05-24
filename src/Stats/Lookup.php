@@ -4,15 +4,9 @@ declare(strict_types=1);
 
 namespace FrostyMedia\WpTally\Stats;
 
-use Symfony\Component\HttpFoundation\Request;
-use function filter_var;
 use function FrostyMedia\WpTally\getIpAddress;
 use function get_plugin_data;
-use function sanitize_text_field;
 use function update_option;
-use const FILTER_FLAG_IPV4;
-use const FILTER_FLAG_IPV6;
-use const FILTER_VALIDATE_IP;
 use const FrostyMedia\WpTally\PLUGIN_FILE;
 
 /**
