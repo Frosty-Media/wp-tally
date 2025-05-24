@@ -99,7 +99,7 @@ function getTally(string $username): ?object
         [
             'headers' => [
                 'Accept' => 'application/json',
-                'referer' => Api::getHttpReferrer(),
+                'Referer' => Api::getHttpReferrer(),
             ],
         ]
     );
