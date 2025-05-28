@@ -18,7 +18,6 @@ use function add_rewrite_endpoint;
 use function apply_filters;
 use function delete_transient;
 use function filter_var;
-use function FrostyMedia\WpTally\getIpAddress;
 use function FrostyMedia\WpTally\getRating;
 use function FrostyMedia\WpTally\getTransientName;
 use function FrostyMedia\WpTally\maybeGetPlugins;
@@ -26,6 +25,7 @@ use function FrostyMedia\WpTally\maybeGetThemes;
 use function FrostyMedia\WpTally\sort;
 use function sanitize_user;
 use function session_write_close;
+use function TheFrosty\WpUtilities\getIpAddress;
 use function trailingslashit;
 use const FILTER_VALIDATE_BOOLEAN;
 

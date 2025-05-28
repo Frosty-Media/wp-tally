@@ -9,12 +9,10 @@ use FrostyMedia\WpTally\Models\Plugins\Plugin;
 use FrostyMedia\WpTally\Models\Themes\Api as ThemesApi;
 use FrostyMedia\WpTally\Models\Themes\Theme;
 use FrostyMedia\WpTally\Route\Api;
-use Symfony\Component\HttpFoundation\Request;
 use WP_Error;
 use WP_Http;
 use function delete_transient;
 use function esc_url_raw;
-use function filter_var;
 use function function_exists;
 use function get_transient;
 use function hash;
@@ -24,10 +22,10 @@ use function json_decode;
 use function json_last_error;
 use function plugins_api;
 use function round;
-use function sanitize_text_field;
 use function set_transient;
 use function sprintf;
 use function strcmp;
+use function TheFrosty\WpUtilities\getIpAddress;
 use function themes_api;
 use function trailingslashit;
 use function usort;
@@ -35,47 +33,8 @@ use function wp_remote_retrieve_body;
 use function wp_remote_retrieve_header;
 use function wp_remote_retrieve_response_code;
 use function wp_safe_remote_get;
-use const FILTER_FLAG_IPV4;
-use const FILTER_FLAG_IPV6;
-use const FILTER_VALIDATE_IP;
 use const JSON_ERROR_NONE;
 use const JSON_THROW_ON_ERROR;
-
-/**
- * Get the clients IP.
- * @param Request|null $request
- * @return string
- */
-function getIpAddress(?Request $request = null): string
-{
-    $request ??= Request::createFromGlobals();
-
-    $ip = $request->server->get(
-        'HTTP_CLIENT_IP',
-        $request->server->get(
-            'HTTP_CF_CONNECTING_IP',
-            $request->server->get(
-                'HTTP_X_FORWARDED',
-                $request->server->get(
-                    'HTTP_X_FORWARDED_FOR',
-                    $request->server->get(
-                        'HTTP_FORWARDED',
-                        $request->server->get(
-                            'HTTP_FORWARDED_FOR',
-                            $request->server->get('REMOTE_ADDR')
-                        )
-                    )
-                )
-            )
-        )
-    );
-
-    if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6)) {
-        return 'Unknown';
-    }
-
-    return sanitize_text_field($ip);
-}
 
 /**
  * Get the Tally API endpoint URL.
