@@ -23,11 +23,13 @@ use FrostyMedia\WpTally\Stats\Lookup;
 use ReflectionMethod;
 use TheFrosty\WpUtilities\Plugin\PluginFactory;
 use TheFrosty\WpUtilities\WpAdmin\DisablePluginUpdateCheck;
+use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 use function apply_filters;
 use function defined;
 use function delete_option;
 use function flush_rewrite_rules;
 use function is_readable;
+use function method_exists;
 use function register_activation_hook;
 use function register_deactivation_hook;
 
@@ -47,6 +49,15 @@ $plugin
     ->addOnHook(Stats\StatsPage::class, 'wp_loaded', admin_only: true, args: [$container])
     ->addOnHook(WpAdmin\DashboardWidget::class, 'load-index.php', args: [$container])
     ->initialize();
+
+$updateChecker = PucFactory::buildUpdateChecker(
+    'https://github.com/Frosty-Media/wp-tally/',
+    __FILE__,
+    $plugin->getSlug()
+);
+if (method_exists($updateChecker->getVcsApi(), 'enableReleaseAssets')) {
+    $updateChecker->getVcsApi()->enableReleaseAssets();
+}
 
 // Make sure we flush rules for our rewrite endpoint.
 register_activation_hook(__FILE__, static function (): void {
