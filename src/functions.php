@@ -16,7 +16,6 @@ use function delete_transient;
 use function esc_url_raw;
 use function function_exists;
 use function get_transient;
-use function hash;
 use function home_url;
 use function is_wp_error;
 use function json_decode;
@@ -89,8 +88,7 @@ function getTally(string $username): ?Tally
  */
 function getTallyCached(string $username, ?string $transient_key = null, ?int $expiration = null): ?Tally
 {
-    $url = sprintf('%s%s', getTallyUrl(), $username);
-    $transient_key ??= sprintf('%s_%s', __FUNCTION__, hash('sha256', $url));
+    $transient_key ??= getTransientName($username, 'getTally');
     $expiration ??= WEEK_IN_SECONDS;
 
     $response = get_transient($transient_key);
