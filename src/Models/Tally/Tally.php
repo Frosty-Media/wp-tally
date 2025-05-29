@@ -40,7 +40,7 @@ class Tally extends BaseModel
         foreach ($plugins as $key => $plugin) {
             if ($key === Plugin::SECTION_ERROR) {
                 // User has no plugins.
-                $this->$plugin[] = new Plugin($plugin);
+                $this->$plugin[] = new Plugin($plugins);
                 continue;
             }
             $this->plugins[] = new Plugin($plugin);
