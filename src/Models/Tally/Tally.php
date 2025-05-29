@@ -40,8 +40,8 @@ class Tally extends BaseModel
         foreach ($plugins as $key => $plugin) {
             if ($key === Plugin::SECTION_ERROR) {
                 // User has no plugins.
-                $this->$plugin[] = new Plugin($plugins);
-                continue;
+                $this->plugins[] = new Plugin($plugins);
+                break;
             }
             $this->plugins[] = new Plugin($plugin);
         }
@@ -62,7 +62,7 @@ class Tally extends BaseModel
             if ($key === Theme::SECTION_ERROR) {
                 // User has no themes.
                 $this->themes[] = new Theme($themes);
-                continue;
+                break;
             }
             $this->themes[] = new Theme($theme);
         }
