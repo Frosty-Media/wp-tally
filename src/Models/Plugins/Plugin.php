@@ -15,6 +15,7 @@ class Plugin extends BaseModel
 
     public const string SECTION_NAME = 'name';
     public const string SECTION_SLUG = 'slug';
+    public const string SECTION_URL = 'url';
     public const string SECTION_VERSION = 'version';
     public const string SECTION_AUTHOR = 'author';
     public const string SECTION_AUTHOR_PROFILE = 'author_profile';
@@ -34,6 +35,7 @@ class Plugin extends BaseModel
     public const string SECTION_HOMEPAGE = 'homepage';
     public const string SECTION_DOWNLOAD_LINK = 'download_link';
     public const string SECTION_ICONS = 'icons';
+    public const string SECTION_ERROR = 'error';
 
     private string $name;
 
@@ -59,6 +61,19 @@ class Plugin extends BaseModel
     public function getSlug(): string
     {
         return $this->slug;
+    }
+
+    private string $url;
+
+    public function setUrl(string $url): self
+    {
+        $this->url = $url;
+        return $this;
+    }
+
+    public function getUrl(): string
+    {
+        return $this->url;
     }
 
     private string $version;
@@ -152,15 +167,15 @@ class Plugin extends BaseModel
         return $this->requiresPlugins;
     }
 
-    private int $rating;
+    private float|int $rating;
 
-    public function setRating(int $rating): self
+    public function setRating(float|int $rating): self
     {
         $this->rating = $rating;
         return $this;
     }
 
-    public function getRating(): int
+    public function getRating(): float|int
     {
         return $this->rating;
     }
@@ -295,6 +310,19 @@ class Plugin extends BaseModel
         return $this->icons;
     }
 
+    private ?string $error = null;
+
+    public function setError(string $error): self
+    {
+        $this->error = $error;
+        return $this;
+    }
+
+    public function getError(): ?string
+    {
+        return $this->error;
+    }
+
     /**
      * Get serializable fields.
      * @return string[]
@@ -304,6 +332,7 @@ class Plugin extends BaseModel
         return [
             self::SECTION_NAME,
             self::SECTION_SLUG,
+            self::SECTION_URL,
             self::SECTION_VERSION,
             self::SECTION_AUTHOR,
             self::SECTION_AUTHOR_PROFILE,
@@ -323,6 +352,7 @@ class Plugin extends BaseModel
             self::SECTION_HOMEPAGE,
             self::SECTION_DOWNLOAD_LINK,
             self::SECTION_ICONS,
+            self::SECTION_ERROR,
         ];
     }
 }
