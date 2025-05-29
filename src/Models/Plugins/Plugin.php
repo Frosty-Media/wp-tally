@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FrostyMedia\WpTally\Models\Plugins;
 
+use FrostyMedia\WpTally\Models\ErrorTrait;
 use TheFrosty\WpUtilities\Models\BaseModel;
 
 /**
@@ -12,6 +13,8 @@ use TheFrosty\WpUtilities\Models\BaseModel;
  */
 class Plugin extends BaseModel
 {
+
+    use ErrorTrait;
 
     public const string SECTION_NAME = 'name';
     public const string SECTION_SLUG = 'slug';
@@ -35,7 +38,6 @@ class Plugin extends BaseModel
     public const string SECTION_HOMEPAGE = 'homepage';
     public const string SECTION_DOWNLOAD_LINK = 'download_link';
     public const string SECTION_ICONS = 'icons';
-    public const string SECTION_ERROR = 'error';
 
     private string $name;
 
@@ -310,19 +312,6 @@ class Plugin extends BaseModel
         return $this->icons;
     }
 
-    private ?string $error = null;
-
-    public function setError(string $error): self
-    {
-        $this->error = $error;
-        return $this;
-    }
-
-    public function getError(): ?string
-    {
-        return $this->error;
-    }
-
     /**
      * Get serializable fields.
      * @return string[]
@@ -352,7 +341,6 @@ class Plugin extends BaseModel
             self::SECTION_HOMEPAGE,
             self::SECTION_DOWNLOAD_LINK,
             self::SECTION_ICONS,
-            self::SECTION_ERROR,
         ];
     }
 }

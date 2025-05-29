@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FrostyMedia\WpTally\Models\Themes;
 
+use FrostyMedia\WpTally\Models\ErrorTrait;
 use TheFrosty\WpUtilities\Models\BaseModel;
 
 /**
@@ -12,6 +13,8 @@ use TheFrosty\WpUtilities\Models\BaseModel;
  */
 class Theme extends BaseModel
 {
+
+    use ErrorTrait;
 
     public const string SECTION_NAME = 'name';
     public const string SECTION_SLUG = 'slug';
@@ -35,7 +38,6 @@ class Theme extends BaseModel
     public const string SECTION_EXTERNAL_SUPPORT_URL = 'external_support_url';
     public const string SECTION_IS_COMMUNITY = 'is_community';
     public const string SECTION_EXTERNAL_REPOSITORY_URL = 'external_repository_url';
-    public const string SECTION_ERROR = 'error';
 
     private string $name;
 
@@ -333,19 +335,6 @@ class Theme extends BaseModel
         return $this->externalRepositoryUrl;
     }
 
-    private ?string $error = null;
-
-    public function setError(string $error): self
-    {
-        $this->error = $error;
-        return $this;
-    }
-
-    public function getError(): ?string
-    {
-        return $this->error;
-    }
-
     /**
      * Get serializable fields.
      * @return string[]
@@ -375,7 +364,6 @@ class Theme extends BaseModel
             self::SECTION_EXTERNAL_SUPPORT_URL,
             self::SECTION_IS_COMMUNITY,
             self::SECTION_EXTERNAL_REPOSITORY_URL,
-            self::SECTION_ERROR,
         ];
     }
 }
