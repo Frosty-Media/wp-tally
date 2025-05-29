@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace FrostyMedia\WpTally\Stats;
 
-use function FrostyMedia\WpTally\getIpAddress;
 use function get_plugin_data;
+use function TheFrosty\WpUtilities\getIpAddress;
 use function update_option;
 use const FrostyMedia\WpTally\PLUGIN_FILE;
 
