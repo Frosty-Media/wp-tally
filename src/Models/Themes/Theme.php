@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FrostyMedia\WpTally\Models\Themes;
 
+use FrostyMedia\WpTally\Models\ErrorTrait;
 use TheFrosty\WpUtilities\Models\BaseModel;
 
 /**
@@ -13,8 +14,11 @@ use TheFrosty\WpUtilities\Models\BaseModel;
 class Theme extends BaseModel
 {
 
+    use ErrorTrait;
+
     public const string SECTION_NAME = 'name';
     public const string SECTION_SLUG = 'slug';
+    public const string SECTION_URL = 'url';
     public const string SECTION_VERSION = 'version';
     public const string SECTION_PREVIEW_URL = 'preview_url';
     public const string SECTION_AUTHOR = 'author';
@@ -59,6 +63,19 @@ class Theme extends BaseModel
     public function getSlug(): string
     {
         return $this->slug;
+    }
+
+    private string $url;
+
+    public function setUrl(string $url): self
+    {
+        $this->url = $url;
+        return $this;
+    }
+
+    public function getUrl(): string
+    {
+        return $this->url;
     }
 
     private string $version;
@@ -136,15 +153,15 @@ class Theme extends BaseModel
         return $this->ratings;
     }
 
-    private int $rating;
+    private float|int $rating;
 
-    public function setRating(int $rating): self
+    public function setRating(float|int $rating): self
     {
         $this->rating = $rating;
         return $this;
     }
 
-    public function getRating(): int
+    public function getRating(): float|int
     {
         return $this->rating;
     }
@@ -327,6 +344,7 @@ class Theme extends BaseModel
         return [
             self::SECTION_NAME,
             self::SECTION_SLUG,
+            self::SECTION_URL,
             self::SECTION_VERSION,
             self::SECTION_PREVIEW_URL,
             self::SECTION_AUTHOR,

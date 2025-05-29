@@ -6,6 +6,7 @@ namespace FrostyMedia\WpTally\Route;
 
 use FrostyMedia\WpTally\Models\Plugins\Api as PluginsApi;
 use FrostyMedia\WpTally\Models\Plugins\Plugin;
+use FrostyMedia\WpTally\Models\Tally\Info;
 use FrostyMedia\WpTally\Models\Themes\Api as ThemesApi;
 use FrostyMedia\WpTally\Models\Themes\Theme;
 use FrostyMedia\WpTally\ServiceProvider;
@@ -182,15 +183,18 @@ class Api extends AbstractContainerProvider
 
         $data = [];
         $data[PluginsApi::SECTION_INFO] = [
-            'user' => $username,
-            'profile' => $profile,
+            Info::SECTION_USER => $username,
+            Info::SECTION_PROFILE => $profile,
         ];
 
         $plugins = maybeGetPlugins($username, isset($force));
 
         if (is_wp_error($plugins)) {
             $data[PluginsApi::SECTION_PLUGINS] = [
-                'error' => sprintf('An error occurred with the plugins API: %s', $plugins->get_error_message()),
+                Plugin::SECTION_ERROR => sprintf(
+                    'An error occurred with the plugins API: %s',
+                    $plugins->get_error_message()
+                ),
             ];
         } else {
             // How many plugins does the user have?
@@ -199,7 +203,7 @@ class Api extends AbstractContainerProvider
 
             if ($count === 0) {
                 $data[PluginsApi::SECTION_PLUGINS] = [
-                    'error' => sprintf('No plugins found for %s.', $username),
+                    Plugin::SECTION_ERROR => sprintf('No plugins found for %s.', $username),
                 ];
             } else {
                 // Maybe sort plugins.
@@ -209,7 +213,7 @@ class Api extends AbstractContainerProvider
                     $slug = $plugin->getSlug();
                     $data[PluginsApi::SECTION_PLUGINS][$slug] = [
                         Plugin::SECTION_NAME => $plugin->getName(),
-                        'url' => sprintf('https://wordpress.org/plugins/%s', $slug),
+                        Plugin::SECTION_URL => sprintf('https://wordpress.org/plugins/%s', $slug),
                         Plugin::SECTION_VERSION => $plugin->getVersion(),
                         Plugin::SECTION_ADDED => $plugin->getAdded(),
                         Plugin::SECTION_LAST_UPDATED => $plugin->getLastUpdated(),
@@ -221,8 +225,8 @@ class Api extends AbstractContainerProvider
                     $total_downloads += $plugin->getDownloaded();
                 }
 
-                $data[PluginsApi::SECTION_INFO]['plugin_count'] = $count;
-                $data[PluginsApi::SECTION_INFO]['total_plugin_downloads'] = $total_downloads;
+                $data[PluginsApi::SECTION_INFO][Info::SECTION_PLUGIN_COUNT] = $count;
+                $data[PluginsApi::SECTION_INFO][Info::SECTION_TOTAL_PLUGIN_DOWNLOADS] = $total_downloads;
             }
         }
 
@@ -230,7 +234,10 @@ class Api extends AbstractContainerProvider
 
         if (is_wp_error($themes)) {
             $data[ThemesApi::SECTION_THEMES] = [
-                'error' => sprintf('An error occurred with the themes API: %s', $themes->get_error_message()),
+                Theme::SECTION_ERROR => sprintf(
+                    'An error occurred with the themes API: %s',
+                    $themes->get_error_message()
+                ),
             ];
         } else {
             // How many themes does the user have?
@@ -239,7 +246,7 @@ class Api extends AbstractContainerProvider
 
             if ($count === 0) {
                 $data[ThemesApi::SECTION_THEMES] = [
-                    'error' => sprintf('No themes found for %s.', $username),
+                    Theme::SECTION_ERROR => sprintf('No themes found for %s.', $username),
                 ];
             } else {
                 // Maybe sort themes.
@@ -249,18 +256,18 @@ class Api extends AbstractContainerProvider
                     $slug = $theme->getSlug();
                     $data[ThemesApi::SECTION_THEMES][$slug] = [
                         Theme::SECTION_NAME => $theme->getName(),
-                        'url' => sprintf('https://wordpress.org/themes/%s', $slug),
+                        Theme::SECTION_URL => sprintf('https://wordpress.org/themes/%s', $slug),
                         Theme::SECTION_VERSION => $theme->getVersion(),
                         Theme::SECTION_LAST_UPDATED => $theme->getLastUpdated(),
                         Theme::SECTION_RATING => getRating($theme),
-                        'downloads' => $theme->getDownloaded(),
+                        Theme::SECTION_DOWNLOADED => $theme->getDownloaded(),
                     ];
 
                     $total_downloads += $theme->getDownloaded();
                 }
 
-                $data[ThemesApi::SECTION_INFO]['theme_count'] = $count;
-                $data[ThemesApi::SECTION_INFO]['total_theme_downloads'] = $total_downloads;
+                $data[ThemesApi::SECTION_INFO][Info::SECTION_THEME_COUNT] = $count;
+                $data[ThemesApi::SECTION_INFO][Info::SECTION_TOTAL_THEME_DOWNLOADS] = $total_downloads;
             }
         }
 
