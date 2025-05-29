@@ -6,6 +6,7 @@ namespace FrostyMedia\WpTally;
 
 use FrostyMedia\WpTally\Models\Plugins\Api as PluginsApi;
 use FrostyMedia\WpTally\Models\Plugins\Plugin;
+use FrostyMedia\WpTally\Models\Tally\Tally;
 use FrostyMedia\WpTally\Models\Themes\Api as ThemesApi;
 use FrostyMedia\WpTally\Models\Themes\Theme;
 use FrostyMedia\WpTally\Route\Api;
@@ -48,15 +49,16 @@ function getTallyUrl(): string
 /**
  * Get the tally.
  * @param string $username
- * @return object|null
+ * @return Tally|null
  * @throws \JsonException
  */
-function getTally(string $username): ?object
+function getTally(string $username): ?Tally
 {
     $url = sprintf('%s%s', getTallyUrl(), $username);
     $response = wp_safe_remote_get(
         esc_url_raw($url),
         [
+            'timeout' => 1,
             'headers' => [
                 'Accept' => 'application/json',
                 'Referer' => Api::getHttpReferrer(),
@@ -73,8 +75,8 @@ function getTally(string $username): ?object
         return null;
     }
 
-    $tally = json_decode(wp_remote_retrieve_body($response), false, flags: JSON_THROW_ON_ERROR);
-    return json_last_error() === JSON_ERROR_NONE ? $tally : null;
+    $tally = json_decode(wp_remote_retrieve_body($response), true, flags: JSON_THROW_ON_ERROR);
+    return json_last_error() === JSON_ERROR_NONE ? new Tally($tally) : null;
 }
 
 /**
@@ -82,21 +84,23 @@ function getTally(string $username): ?object
  * @param string $username
  * @param string|null $transient_key
  * @param int|null $expiration
- * @return object|null
+ * @return Tally|null
  * @throws \JsonException
  */
-function getTallyCached(string $username, ?string $transient_key = null, ?int $expiration = null): ?object
+function getTallyCached(string $username, ?string $transient_key = null, ?int $expiration = null): ?Tally
 {
     $url = sprintf('%s%s', getTallyUrl(), $username);
     $transient_key ??= sprintf('%s_%s', __FUNCTION__, hash('sha256', $url));
     $expiration ??= WEEK_IN_SECONDS;
 
     $response = get_transient($transient_key);
-    if ($response === false) {
+    if (!$response instanceof Tally) {
         $response = getTally($username);
-        if ($response) {
-            set_transient($transient_key, $response, $expiration);
+        if (!$response instanceof Tally) {
+            return null;
         }
+        set_transient($transient_key, $response, $expiration);
+        return $response;
     }
 
     return $response;
