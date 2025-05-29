@@ -45,7 +45,7 @@ trait Limiter
 
         // Ensure the IP address is a valid IPv4 or IPv6 address.
         if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6)) {
-            $error->add('invalid_ip', 'Error: Invalid IP address');
+            $error->add('invalid_ip', sprintf('Error: Invalid IP address: %s', $ip));
             return $error;
         }
 
