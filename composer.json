@@ -1,6 +1,7 @@
 {
   "name": "frosty-media/wp-tally",
   "type": "wordpress-plugin",
+  "description": "Track your total WordPress plugin and theme downloads.",
   "license": "GPL-2.0-or-later",
   "authors": [
     {
