@@ -38,7 +38,6 @@
     "phpcompatibility/php-compatibility": "*",
     "phpstan/extension-installer": "^1.4",
     "rector/rector": "^2.0",
-    "roave/security-advisories": "dev-latest",
     "roots/wordpress-no-content": "^6.8",
     "slevomat/coding-standard": "~8.18",
     "squizlabs/php_codesniffer": "^3.2",
