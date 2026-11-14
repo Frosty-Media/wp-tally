@@ -3,11 +3,11 @@
  * Plugin Name: WP Tally
  * Plugin URI: https://github.com/Frosty-Media/wp-tally
  * Description: Track your total WordPress plugin and theme downloads.
- * Version: 2.4.4
+ * Version: 2.4.5
  * Author: Austin Passy
  * Author URI: https://austin.passy.co
  * Requires at least: 6.8
- * Tested up to: 6.8.1
+ * Tested up to: 7.2.0
  * Requires PHP: 8.3
  * Plugin URI: https://github.com/Frosty-Media/wp-tally
  * GitHub Plugin URI: https://github.com/Frosty-Media/wp-tally
@@ -23,7 +23,7 @@ use FrostyMedia\WpTally\Stats\Lookup;
 use ReflectionMethod;
 use TheFrosty\WpUtilities\Plugin\PluginFactory;
 use TheFrosty\WpUtilities\WpAdmin\DisablePluginUpdateCheck;
-use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
+use YahnisElsts\PluginUpdateChecker\v6\PucFactory;
 use function apply_filters;
 use function defined;
 use function delete_option;
