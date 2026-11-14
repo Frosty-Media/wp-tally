@@ -28,9 +28,9 @@
   "require": {
     "php": "^8.3",
     "pimple/pimple": "~3.0",
-    "symfony/http-foundation": "^7.1.7",
-    "thefrosty/wp-utilities": "^3.7.1",
-    "yahnis-elsts/plugin-update-checker": "^5.6"
+    "symfony/http-foundation": "^7.4 || ^8.1.11",
+    "thefrosty/wp-utilities": "^3.8.1",
+    "yahnis-elsts/plugin-update-checker": "6.0"
   },
   "require-dev": {
     "dealerdirect/phpcodesniffer-composer-installer": "^1.0.0",
@@ -40,10 +40,10 @@
     "rector/rector": "^2.0",
     "roots/wordpress-no-content": "^6.8",
     "slevomat/coding-standard": "~8.18",
-    "squizlabs/php_codesniffer": "^3.2",
+    "squizlabs/php_codesniffer": "^3.13 || ^4.0.2",
     "szepeviktor/phpstan-wordpress": "^2.0",
     "vimeo/psalm": "^6.0",
-    "wp-coding-standards/wpcs": "^3.1"
+    "wp-coding-standards/wpcs": "^3.4"
   },
   "autoload": {
     "files": [
