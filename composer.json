@@ -42,7 +42,7 @@
     "slevomat/coding-standard": "~8.18",
     "squizlabs/php_codesniffer": "^3.13 || ^4.0.2",
     "szepeviktor/phpstan-wordpress": "^2.0",
-    "vimeo/psalm": "^6.0",
+    "vimeo/psalm": "^7.3",
     "wp-coding-standards/wpcs": "^3.4"
   },
   "autoload": {
