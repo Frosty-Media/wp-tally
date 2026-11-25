@@ -11,7 +11,7 @@ use function dirname;
  * Class ServiceProvider
  * @package FrostyMedia\WpTally
  */
-class ServiceProvider  extends DefaultServiceProvider
+class ServiceProvider extends DefaultServiceProvider
 {
 
     protected function getViewPaths(): array
