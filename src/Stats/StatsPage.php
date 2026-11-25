@@ -5,8 +5,8 @@ declare(strict_types=1);
 
 namespace FrostyMedia\WpTally\Stats;
 
-use FrostyMedia\WpTally\ServiceProvider;
 use TheFrosty\WpUtilities\Plugin\AbstractContainerProvider;
+use TheFrosty\WpUtilities\Plugin\DefaultServiceProvider;
 use TheFrosty\WpUtilities\Utils\Viewable;
 use function add_dashboard_page;
 use function current_user_can;
@@ -49,7 +49,7 @@ class StatsPage extends AbstractContainerProvider
                     return;
                 }
                 $this->maybeClearStats();
-                $this->getView(ServiceProvider::WP_UTILITIES_VIEW)->render(
+                $this->getView(DefaultServiceProvider::VIEW)->render(
                     'settings/settings',
                     ['data' => Lookup::getOption()]
                 );
@@ -75,7 +75,7 @@ class StatsPage extends AbstractContainerProvider
     private function maybeClearStats(): void
     {
         /** @var \Symfony\Component\HttpFoundation\Request $request */
-        $request = $this->getContainer()->get(ServiceProvider::REQUEST);
+        $request = $this->getContainer()->get(DefaultServiceProvider::REQUEST);
         if (
             !$request->query->has('_wpnonce') ||
             !wp_verify_nonce($request->query->get('_wpnonce'), '_wp_tally_nonce')

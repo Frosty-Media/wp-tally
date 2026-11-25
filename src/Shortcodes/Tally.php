@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace FrostyMedia\WpTally\Shortcodes;
 
-use FrostyMedia\WpTally\ServiceProvider;
 use TheFrosty\WpUtilities\Plugin\AbstractContainerProvider;
+use TheFrosty\WpUtilities\Plugin\DefaultServiceProvider;
 use TheFrosty\WpUtilities\Plugin\HttpFoundationRequestInterface;
 use TheFrosty\WpUtilities\Plugin\HttpFoundationRequestTrait;
 use TheFrosty\WpUtilities\Utils\Viewable;
@@ -54,7 +54,7 @@ class Tally extends AbstractContainerProvider implements HttpFoundationRequestIn
                 filemtime(plugin_dir_path(dirname(__DIR__)) . 'resources/css/style.css')
             );
 
-            return $this->getView(ServiceProvider::WP_UTILITIES_VIEW)->retrieve(
+            return $this->getView(DefaultServiceProvider::VIEW)->retrieve(
                 'shortcodes/tally',
                 ['request' => $this->getRequest()]
             );
