@@ -9,11 +9,11 @@ use FrostyMedia\WpTally\Models\Plugins\Plugin;
 use FrostyMedia\WpTally\Models\Tally\Info;
 use FrostyMedia\WpTally\Models\Themes\Api as ThemesApi;
 use FrostyMedia\WpTally\Models\Themes\Theme;
-use FrostyMedia\WpTally\ServiceProvider;
 use FrostyMedia\WpTally\Stats\Lookup;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use TheFrosty\WpUtilities\Plugin\AbstractContainerProvider;
+use TheFrosty\WpUtilities\Plugin\DefaultServiceProvider;
 use WP_Http;
 use function add_rewrite_endpoint;
 use function apply_filters;
@@ -118,7 +118,7 @@ class Api extends AbstractContainerProvider
     protected function processQuery(): void
     {
         /** @var \Symfony\Component\HttpFoundation\Request $request */
-        $request = $this->getContainer()->get(ServiceProvider::REQUEST);
+        $request = $this->getContainer()->get(DefaultServiceProvider::REQUEST);
         /**
          * Disable the API if filtered off.
          * @param bool $disable

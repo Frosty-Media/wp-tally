@@ -8,7 +8,7 @@
  * Author URI: https://austin.passy.co
  * Requires at least: 6.8
  * Tested up to: 7.2.0
- * Requires PHP: 8.3
+ * Requires PHP: 8.4
  * Plugin URI: https://github.com/Frosty-Media/wp-tally
  * GitHub Plugin URI: https://github.com/Frosty-Media/wp-tally
  * Primary Branch: develop
@@ -38,9 +38,9 @@ if (is_readable(__DIR__ . '/vendor/autoload.php')) {
 }
 
 const PLUGIN_FILE = __FILE__;
-$plugin = PluginFactory::create('wp-tally');
+$plugin = PluginFactory::create('wp-tally', __FILE__);
+$plugin->addServiceProvider(new ServiceProvider());
 $container = $plugin->getContainer();
-$container->register(new ServiceProvider());
 
 $plugin
     ->add(new DisablePluginUpdateCheck())
