@@ -20,21 +20,21 @@
     },
     "optimize-autoloader": true,
     "platform": {
-      "php": "8.3"
+      "php": "8.4.28"
     },
     "preferred-install": "dist",
     "sort-packages": true
   },
   "require": {
-    "php": "^8.3",
-    "pimple/pimple": "~3.0",
-    "symfony/http-foundation": "^7.4 || ^8.1.11",
-    "thefrosty/wp-utilities": "^3.8.1",
+    "php": "^8.4",
+    "php-di/php-di": "^7.1",
+    "symfony/http-foundation": "^8.1.11",
+    "thefrosty/wp-utilities": "^4.1",
     "yahnis-elsts/plugin-update-checker": "6.0"
   },
   "require-dev": {
     "dealerdirect/phpcodesniffer-composer-installer": "^1.0.0",
-    "php-stubs/wordpress-stubs": "~7.1",
+    "php-stubs/wordpress-stubs": "^7.1",
     "phpcompatibility/php-compatibility": "*",
     "phpstan/extension-installer": "^1.4",
     "rector/rector": "^2.0",
