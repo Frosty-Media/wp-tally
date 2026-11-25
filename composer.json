@@ -54,21 +54,13 @@
     }
   },
   "scripts": {
-    "install-codestandards": [
-      "Dealerdirect\\Composer\\Plugin\\Installers\\PHPCodeSniffer\\Plugin::run"
-    ],
-    "phpcs": [
-      "bash ./vendor/thefrosty/wp-utilities/bin/phpcs.sh --standard=phpcs-ruleset.xml"
-    ],
-    "phpstan": [
-      "bash ./vendor/thefrosty/wp-utilities/bin/phpstan.sh"
-    ],
-    "psalm": [
-      "bash ./vendor/thefrosty/wp-utilities/bin/psalm.sh"
-    ],
-    "eslint": [
-      "npm run eslint"
-    ],
+    "install-codestandards": "Dealerdirect\\Composer\\Plugin\\Installers\\PHPCodeSniffer\\Plugin::run",
+    "phpcs": "bash ./vendor/thefrosty/wp-utilities/bin/phpcs.sh --standard=phpcs-ruleset.xml",
+    "phpstan": "bash ./vendor/thefrosty/wp-utilities/bin/phpstan.sh",
+    "psalm": "bash ./vendor/thefrosty/wp-utilities/bin/psalm.sh",
+    "eslint": "npm run eslint",
+    "refactor": "rector --ansi",
+    "test:refactor": "rector --dry-run --debug --ansi",
     "analyze-all-files": [
       "./vendor/bin/phpcs --standard=phpcs-ruleset.xml",
       "./vendor/bin/phpstan analyze src --memory-limit 1G",
